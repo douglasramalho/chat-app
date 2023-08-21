@@ -8,8 +8,8 @@ import java.util.Date
 @JsonClass(generateAdapter = true)
 data class MessageResponse(
     val id: String,
-    val conversationId: String,
     val senderId: String,
+    val receiverId: String,
     val text: String,
     val timestamp: Long,
     val isUnread: Boolean,
@@ -17,7 +17,8 @@ data class MessageResponse(
 
 fun MessageResponse.toMessage(userId: String) = Message(
     id = this.id,
-    conversationId = this.conversationId,
+    senderId = this.senderId,
+    receiverId = this.receiverId,
     text = this.text,
     formattedTime = DateFormat.getDateInstance(DateFormat.DEFAULT).format(Date(this.timestamp)),
     isUnread = this.isUnread,

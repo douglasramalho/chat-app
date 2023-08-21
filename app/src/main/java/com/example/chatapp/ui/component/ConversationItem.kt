@@ -13,8 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -30,11 +30,11 @@ import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
-fun ConversationCard(
+fun ConversationItem(
     conversation: Conversation,
     onItemClicked: () -> Unit
 ) {
-    Surface(
+    Card(
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
@@ -97,7 +97,7 @@ fun ConversationCard(
 @Composable
 fun PreviewChatCard() {
     ChatAppTheme {
-        ConversationCard(
+        ConversationItem(
             conversation = Conversation(
                 id = "1",
                 members = listOf(

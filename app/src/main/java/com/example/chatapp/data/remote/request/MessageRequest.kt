@@ -4,6 +4,6 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class MessageRequest(
-    val conversationId: String,
+    val receiverId: String,
     val text: String,
 )

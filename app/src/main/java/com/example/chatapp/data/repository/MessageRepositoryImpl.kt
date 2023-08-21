@@ -23,4 +23,14 @@ class MessageRepositoryImpl @Inject constructor(
             }
         )
     }
+
+    override suspend fun getMessages2(receiverId: String): Flow<List<Message>> {
+        val accessToken = sharedPreferences.getString("accessToken", null)
+        val userId = accessToken.getUserIdFromToken()
+        return flowOf(
+            remoteDataSource.getMessages(userId, receiverId).map {
+                it.toMessage(userId)
+            }
+        )
+    }
 }

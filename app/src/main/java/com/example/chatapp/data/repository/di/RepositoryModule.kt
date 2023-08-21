@@ -8,6 +8,8 @@ import com.example.chatapp.data.repository.ConversationRepository
 import com.example.chatapp.data.repository.ConversationRepositoryImpl
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.MessageRepositoryImpl
+import com.example.chatapp.data.repository.UserRepository
+import com.example.chatapp.data.repository.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -28,4 +30,7 @@ interface RepositoryModule {
 
     @Binds
     fun bindChatSocketRepository(repository: ChatSocketRepositoryImpl): ChatSocketRepository
+
+    @Binds
+    fun bindUserRepository(repository: UserRepositoryImpl): UserRepository
 }

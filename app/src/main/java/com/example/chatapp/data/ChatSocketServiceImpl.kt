@@ -113,32 +113,21 @@ class ChatSocketServiceImpl @Inject constructor(
         }.flowOn(dispatcher)
     }
 
-    override suspend fun sendRegisterCurrentScreen(screenName: String, conversationId: String?) {
-        val moshi = Moshi
-            .Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-        val adapter = moshi.adapter(RegisterCurrentScreenRequest::class.java)
-        val request = RegisterCurrentScreenRequest(
-            screenName = screenName,
-            conversationId = conversationId
-        )
-        val jsonText = adapter.toJson(request)
-        webSocket?.send("currentScreen#$jsonText")
-    }
-
     override suspend fun sendGetConversationsList(userId: String) {
         webSocket?.send("getConversations#$userId")
     }
 
-    override suspend fun sendMessage(conversationId: String, message: String) {
+    override suspend fun sendMessage(
+        receiverId: String,
+        message: String
+    ) {
         val moshi = Moshi
             .Builder()
             .add(KotlinJsonAdapterFactory())
             .build()
         val adapter = moshi.adapter(MessageRequest::class.java)
         val messageRequest = MessageRequest(
-            conversationId = conversationId,
+            receiverId = receiverId,
             text = message
         )
         val jsonText = adapter.toJson(messageRequest)

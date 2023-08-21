@@ -73,12 +73,11 @@ class ChatSocketRepositoryImpl @Inject constructor(
         chatSocketService.sendGetConversationsList(userId)
     }
 
-    override suspend fun registerCurrentScreen(screeName: String, conversationId: String?) {
-        chatSocketService.sendRegisterCurrentScreen(screeName, conversationId)
-    }
-
-    override suspend fun sendMessage(conversationId: String, message: String) {
-        chatSocketService.sendMessage(conversationId, message)
+    override suspend fun sendMessage(
+        receiverId: String,
+        message: String
+    ) {
+        chatSocketService.sendMessage(receiverId, message)
     }
 
     override suspend fun sendReadMessage(messageId: String) {
@@ -88,6 +87,15 @@ class ChatSocketRepositoryImpl @Inject constructor(
     override suspend fun getConversationBy(conversationId: String): Flow<Conversation?> {
         return conversationsListFlow.map { conversations ->
             conversations.firstOrNull { it.id == conversationId }
+        }
+    }
+
+    override suspend fun getConversationBy2(receiverId: String): Flow<Conversation?> {
+        val accessToken = sharedPreferences.getString("accessToken", null)
+        val userId = accessToken.getUserIdFromToken()
+
+        return conversationsListFlow.map { conversations ->
+            conversations.firstOrNull { it.members.map { it.id }.containsAll(listOf(userId, receiverId)) }
         }
     }
 }

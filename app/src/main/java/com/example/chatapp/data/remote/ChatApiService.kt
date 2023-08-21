@@ -5,6 +5,7 @@ import com.example.chatapp.data.remote.request.CreateAccountRequest
 import com.example.chatapp.data.remote.response.ConversationResponse
 import com.example.chatapp.data.remote.response.MessageResponse
 import com.example.chatapp.data.remote.response.TokenResponse
+import com.example.chatapp.data.remote.response.UserResponse
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -33,4 +34,21 @@ interface ChatApiService {
 
     @GET("messages/{conversationId}")
     suspend fun getMessages(@Path("conversationId") conversationId: String): List<MessageResponse>
+
+    @GET("messages/{senderId}/{receiverId}")
+    suspend fun getMessages2(
+        @Path("senderId") senderId: String,
+        @Path("receiverId") receiverId: String,
+    ): List<MessageResponse>
+
+    @GET("users")
+    suspend fun getUsers(
+        @Header("Authorization") token: String
+    ): List<UserResponse>
+
+    @GET("users/{userId}")
+    suspend fun getUserById(
+        @Header("Authorization") token: String,
+        @Path("userId") userId: String,
+    ): UserResponse
 }

@@ -5,7 +5,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
 import com.example.chatapp.ui.feature.conversation.ConversationRoute
-import com.example.chatapp.ui.feature.conversationlist.ConversationsListRoute
+import com.example.chatapp.ui.feature.conversationslist.ConversationsListRoute
 
 fun NavGraphBuilder.conversationNavGraph(
     navController: NavHostController
@@ -25,12 +25,12 @@ fun NavGraphBuilder.conversationNavGraph(
                         }
                     }
                 },
-                navigateWhenConversationItemClicked = { conversationId ->
-                    navController.navigate("conversation/$conversationId")
+                navigateWhenConversationItemClicked = { receiverId ->
+                    navController.navigate("conversation/$receiverId")
                 }
             )
         }
-        composable("conversation/{conversationId}") {
+        composable("conversation/{receiverId}") {
             ConversationRoute {
                 navController.popBackStack()
             }

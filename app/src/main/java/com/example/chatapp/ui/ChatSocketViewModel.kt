@@ -7,15 +7,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.data.repository.ChatSocketRepository
-import com.example.chatapp.data.repository.ConversationRepository
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.SocketResult
+import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.model.Message
+import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.feature.conversation.ConversationState
-import com.example.chatapp.ui.feature.conversationlist.ConversationListState
+import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -27,6 +28,7 @@ class ChatSocketViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val authRepository: AuthRepository,
     private val messageRepository: MessageRepository,
+    private val userRepository: UserRepository,
     private val chatSocketRepository: ChatSocketRepository,
 ) : ViewModel() {
 
@@ -36,34 +38,39 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationState = mutableStateOf(ConversationState())
     val conversationState: State<ConversationState> = _conversationState
 
-    private val _conversationListState = mutableStateOf(ConversationListState())
-    val conversationListState: State<ConversationListState> = _conversationListState
+    private val _conversationsListState = mutableStateOf(ConversationsListState())
+    val conversationsListState: State<ConversationsListState> = _conversationsListState
 
     private val logoutChannel = Channel<Unit>()
     val logoutResult = logoutChannel.receiveAsFlow()
 
     init {
         viewModelScope.launch {
-            _conversationListState.value = _conversationListState.value.copy(
+            _conversationsListState.value = _conversationsListState.value.copy(
                 isLoading = true
             )
 
-            savedStateHandle.get<String>("conversationId")?.let { conversationId ->
-                _conversationState.value = _conversationState.value.copy(isLoading = true)
+            savedStateHandle.get<String>("receiverId")?.let { receiverId ->
+                _conversationState.value =
+                    _conversationState.value.copy(isLoading = true)
 
-                chatSocketRepository.getConversationBy(conversationId).collect {
+                userRepository.getUserFlowBy(receiverId).collectLatest {
+                    _conversationState.value =
+                        _conversationState.value.copy(receiver = it)
+                }
+
+                chatSocketRepository.getConversationBy2(receiverId).collect {
                     _conversationState.value = _conversationState.value.copy(
                         conversation = it
                     )
                 }
 
-                messageRepository.getMessages(conversationId).collect {
+                messageRepository.getMessages2(receiverId).collect {
                     _conversationState.value = _conversationState.value.copy(
                         messages = it,
                         isLoading = false
                     )
                 }
-
             }
         }
     }
@@ -88,7 +95,7 @@ class ChatSocketViewModel @Inject constructor(
                         }
 
                         is SocketResult.Conversations -> {
-                            _conversationListState.value = _conversationListState.value.copy(
+                            _conversationsListState.value = _conversationsListState.value.copy(
                                 isLoading = false,
                                 conversationsList = it.conversations
                             )
@@ -119,10 +126,10 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage(conversationId: String) {
+    fun sendMessage() {
         viewModelScope.launch {
             chatSocketRepository.sendMessage(
-                conversationId = conversationId,
+                receiverId = _conversationState.value.receiver?.id ?: "",
                 message = messageTextState.value
             )
             _messageTextState.value = ""

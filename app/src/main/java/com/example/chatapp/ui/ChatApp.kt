@@ -38,7 +38,9 @@ fun ChatApp(
     Scaffold(
         floatingActionButton = {
             if (appState.currentTopLevelDestination == TopLevelDestination.CONVERSATIONS_LIST) {
-                FloatingActionButton(onClick = { /* ... */ }) {
+                FloatingActionButton(onClick = {
+                    appState.navController.navigate("userGraph")
+                }) {
 
                 }
             }

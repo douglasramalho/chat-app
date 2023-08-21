@@ -7,14 +7,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -32,21 +30,19 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.example.chatapp.R
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
 import com.example.chatapp.model.Message
+import com.example.chatapp.model.User
 import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.ChatSocketViewModel
 
@@ -77,6 +73,7 @@ fun ConversationRoute(
     val messageText by viewModel.messageTextState
 
     val conversation = state.conversation
+    val receiver = state.receiver
     val messages = state.messages
     messages.forEach {
         viewModel.readMessage(it)
@@ -84,17 +81,19 @@ fun ConversationRoute(
 
     ConversationScreen(
         conversation,
+        receiver,
         messages,
         messageText,
         onNavigationClick,
         viewModel::onMessageChange,
-    ) { viewModel.sendMessage(state.conversation?.id ?: "") }
+    ) { viewModel.sendMessage() }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationScreen(
     conversation: Conversation?,
+    receiver: User?,
     messages: List<Message>,
     messageText: String,
     onNavigationClick: () -> Unit,
@@ -105,7 +104,7 @@ fun ConversationScreen(
         CenterAlignedTopAppBar(
             title = {
                 Text(
-                    text = conversation?.getReceiverMember()?.firstName ?: "",
+                    text = receiver?.firstName ?: "",
                     style = MaterialTheme.typography.titleLarge,
                     color = Color.White
                 )
@@ -267,10 +266,18 @@ fun PreviewConversationScreen() {
             lastMessage = "Olá",
             timestamp = ""
         ),
+        receiver = User(
+            id = "1",
+            username = "tibeca@gmail.com",
+            "Douglas",
+            "Motta",
+            null
+        ),
         messages = listOf(
             Message(
                 id = "1",
-                conversationId = "1",
+                senderId = "1",
+                receiverId = "2",
                 text = "I'm doing well",
                 formattedTime = "Today",
                 isUnread = false,
@@ -278,7 +285,8 @@ fun PreviewConversationScreen() {
             ),
             Message(
                 id = "1",
-                conversationId = "1",
+                senderId = "1",
+                receiverId = "2",
                 text = "Hello Raissa",
                 formattedTime = "Today",
                 isUnread = false,
@@ -286,7 +294,8 @@ fun PreviewConversationScreen() {
             ),
             Message(
                 id = "1",
-                conversationId = "1",
+                senderId = "1",
+                receiverId = "2",
                 text = "Hello Douglas",
                 formattedTime = "Today",
                 isUnread = false,
@@ -294,7 +303,8 @@ fun PreviewConversationScreen() {
             ),
             Message(
                 id = "1",
-                conversationId = "1",
+                senderId = "1",
+                receiverId = "2",
                 text = "How are you doing?",
                 formattedTime = "Today",
                 isUnread = false,

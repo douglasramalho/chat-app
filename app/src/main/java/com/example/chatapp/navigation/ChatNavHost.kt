@@ -57,5 +57,7 @@ fun ChatNavHost(
         conversationNavGraph(
             navController = navController
         )
+
+        userNavGraph(navController = navController)
     }
 }

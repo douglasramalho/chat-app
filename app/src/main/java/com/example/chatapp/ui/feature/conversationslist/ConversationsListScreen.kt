@@ -1,9 +1,8 @@
-package com.example.chatapp.ui.feature.conversationlist
+package com.example.chatapp.ui.feature.conversationslist
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -25,22 +24,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.chatapp.R
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
+import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.ChatSocketViewModel
-import com.example.chatapp.ui.component.ConversationCard
+import com.example.chatapp.ui.component.ConversationItem
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ConversationsListRoute(
     viewModel: ChatSocketViewModel = hiltViewModel(),
     navigateWhenLogout: () -> Unit,
-    navigateWhenConversationItemClicked: (conversationId: String) -> Unit,
+    navigateWhenConversationItemClicked: (receiverId: String) -> Unit,
 ) {
 
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -66,15 +65,15 @@ fun ConversationsListRoute(
         }
     }
 
-    val state by viewModel.conversationListState
+    val state by viewModel.conversationsListState
 
     ConversationsListScreen(
         conversationsList = state.conversationsList,
         onIconButtonClicked = {
             viewModel.logout()
         },
-        onConversationItemClicked = { conversationId ->
-            navigateWhenConversationItemClicked(conversationId)
+        onConversationItemClicked = { receiverId ->
+            navigateWhenConversationItemClicked(receiverId)
         }
     )
 }
@@ -84,7 +83,7 @@ fun ConversationsListRoute(
 private fun ConversationsListScreen(
     conversationsList: List<Conversation>,
     onIconButtonClicked: () -> Unit,
-    onConversationItemClicked: (conversationId: String) -> Unit
+    onConversationItemClicked: (receiverId: String) -> Unit
 ) {
 
     Row(modifier = Modifier.fillMaxSize()) {
@@ -115,10 +114,10 @@ private fun ConversationsListScreen(
 
             LazyColumn {
                 items(conversationsList) { conversation ->
-                    ConversationCard(
+                    ConversationItem(
                         conversation = conversation
                     ) {
-                        onConversationItemClicked(conversation.id)
+                        onConversationItemClicked(conversation.getReceiverMember().id)
                     }
                 }
             }
@@ -137,10 +136,18 @@ fun PreviewConversationsListScreen() {
                         id = "1",
                         members = listOf(
                             ConversationMember(
-                                id = "",
+                                id = "1",
                                 isSelf = true,
                                 username = "",
                                 firstName = "Douglas",
+                                lastName = "",
+                                profilePictureUrl = null
+                            ),
+                            ConversationMember(
+                                id = "2",
+                                isSelf = false,
+                                username = "",
+                                firstName = "Raissa",
                                 lastName = "",
                                 profilePictureUrl = null
                             )
