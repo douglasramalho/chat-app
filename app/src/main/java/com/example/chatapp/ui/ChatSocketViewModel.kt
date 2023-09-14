@@ -59,12 +59,6 @@ class ChatSocketViewModel @Inject constructor(
                         _conversationState.value.copy(receiver = it)
                 }
 
-                chatSocketRepository.getConversationBy2(receiverId).collect {
-                    _conversationState.value = _conversationState.value.copy(
-                        conversation = it
-                    )
-                }
-
                 messageRepository.getMessages2(receiverId).collect {
                     _conversationState.value = _conversationState.value.copy(
                         messages = it,

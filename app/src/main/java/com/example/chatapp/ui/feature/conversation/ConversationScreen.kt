@@ -72,7 +72,6 @@ fun ConversationRoute(
     val state by viewModel.conversationState
     val messageText by viewModel.messageTextState
 
-    val conversation = state.conversation
     val receiver = state.receiver
     val messages = state.messages
     messages.forEach {
@@ -80,7 +79,6 @@ fun ConversationRoute(
     }
 
     ConversationScreen(
-        conversation,
         receiver,
         messages,
         messageText,
@@ -92,7 +90,6 @@ fun ConversationRoute(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ConversationScreen(
-    conversation: Conversation?,
     receiver: User?,
     messages: List<Message>,
     messageText: String,
@@ -242,30 +239,6 @@ private fun checkPreviousMessage(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 fun PreviewConversationScreen() {
     ConversationScreen(
-        conversation = Conversation(
-            "1",
-            members = listOf(
-                ConversationMember(
-                    id = "1",
-                    isSelf = true,
-                    username = "tibeca@gmail.com",
-                    firstName = "Douglas",
-                    lastName = "Motta",
-                    profilePictureUrl = null,
-                ),
-                ConversationMember(
-                    id = "2",
-                    isSelf = false,
-                    username = "rahhnascimento@gmail.com",
-                    firstName = "Raissa",
-                    lastName = "Nascimento",
-                    profilePictureUrl = null,
-                )
-            ),
-            unreadCount = 0,
-            lastMessage = "Olá",
-            timestamp = ""
-        ),
         receiver = User(
             id = "1",
             username = "tibeca@gmail.com",

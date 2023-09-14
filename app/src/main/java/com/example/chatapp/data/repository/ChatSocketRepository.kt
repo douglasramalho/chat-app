@@ -21,6 +21,4 @@ interface ChatSocketRepository {
     suspend fun sendReadMessage(messageId: String)
 
     suspend fun getConversationBy(conversationId: String): Flow<Conversation?>
-
-    suspend fun getConversationBy2(receiverId: String): Flow<Conversation?>
 }

@@ -33,7 +33,7 @@ object ApiModule {
     @Singleton
     fun provideApiService(client: OkHttpClient): ChatApiService {
         return Retrofit.Builder()
-            .baseUrl("http://192.168.1.69:8080/")
+            .baseUrl("https://chat-api.douglasmotta.com.br/")
             .addConverterFactory(
                 MoshiConverterFactory.create(
                     Moshi.Builder().add(

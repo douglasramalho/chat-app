@@ -89,13 +89,4 @@ class ChatSocketRepositoryImpl @Inject constructor(
             conversations.firstOrNull { it.id == conversationId }
         }
     }
-
-    override suspend fun getConversationBy2(receiverId: String): Flow<Conversation?> {
-        val accessToken = sharedPreferences.getString("accessToken", null)
-        val userId = accessToken.getUserIdFromToken()
-
-        return conversationsListFlow.map { conversations ->
-            conversations.firstOrNull { it.members.map { it.id }.containsAll(listOf(userId, receiverId)) }
-        }
-    }
 }

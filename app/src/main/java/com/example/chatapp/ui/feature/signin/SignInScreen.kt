@@ -1,6 +1,8 @@
 package com.example.chatapp.ui.feature.signin
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,17 +16,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.chatapp.R
 import com.example.chatapp.model.AuthResult
 import com.example.chatapp.ui.component.ChatPrimaryButton
-import com.example.chatapp.ui.component.ChatTextField
+import com.example.chatapp.ui.component.PrimaryChatTextField
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
@@ -92,26 +102,48 @@ private fun SignInScreen(
     Column(
         modifier = modifier
             .fillMaxSize()
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        Color(0xFF1E1E1E),
+                        Color.Black,
+                    ),
+                )
+            )
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ChatTextField(
-            label = "Username:",
-            value = state.username
+        Image(
+            painter = painterResource(id = R.drawable.logo),
+            contentDescription = null
+        )
+
+        Spacer(modifier = Modifier.height(78.dp))
+
+        PrimaryChatTextField(
+            value = state.username,
+            leftIcon = R.drawable.ic_envelope,
+            placeholder = "E-mail",
+            keyboardType = KeyboardType.Email
         ) {
             usernameChanged(it)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        ChatTextField(
-            label = "Password:",
+        PrimaryChatTextField(
             value = state.password,
+            leftIcon = R.drawable.ic_lock,
+            placeholder = "Password",
+            imeAction = ImeAction.Done,
+            keyboardType = KeyboardType.Password
         ) {
             passwordChanged(it)
         }
 
-        Spacer(modifier = Modifier.height(32.dp))
+        Spacer(modifier = Modifier.height(64.dp))
 
         ChatPrimaryButton(
             title = "Sign In",
@@ -121,7 +153,7 @@ private fun SignInScreen(
             signInClicked()
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(56.dp))
 
         val annotatedString = buildAnnotatedString {
             val text = "Don't have an account? Sign up here"
@@ -129,6 +161,13 @@ private fun SignInScreen(
             val endIndex = startIndex + 12
 
             append(text)
+            addStyle(
+                style = SpanStyle(
+                    color = Color.White,
+                ),
+                start = 0,
+                end = startIndex
+            )
             addStyle(
                 style = SpanStyle(
                     color = MaterialTheme.colorScheme.primary,
@@ -163,7 +202,7 @@ private fun SignInScreen(
     }
 }
 
-@Preview
+@Preview(device = Devices.NEXUS_5)
 @Composable
 fun PreviewSignInScreen() {
     ChatAppTheme {

@@ -40,7 +40,7 @@ class ChatSocketServiceImpl @Inject constructor(
 
     override suspend fun initSession(userId: String): Flow<SocketSessionResult> {
         val request = Request.Builder()
-            .url("ws://192.168.1.69:8080/chat/$userId")
+            .url("ws://chat-api.douglasmotta.com.br:8080/chat/$userId")
             .build()
 
         return callbackFlow {

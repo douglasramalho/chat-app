@@ -4,14 +4,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.chatapp.ui.theme.ChatAppTheme
+import com.example.chatapp.ui.theme.Lumiance95
 
 @Composable
 fun ChatPrimaryButton(
@@ -27,8 +33,19 @@ fun ChatPrimaryButton(
             }
         },
         modifier = modifier
-            .height(50.dp),
-        enabled = !isLoading
+            .height(64.dp)
+            .shadow(
+                4.dp,
+                shape = CircleShape,
+                ambientColor = Color.White,
+                spotColor = Color.White
+            ),
+        enabled = !isLoading,
+        colors = ButtonDefaults.buttonColors(
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary,
+            disabledContainerColor = Lumiance95
+        )
     ) {
         Text(text = title)
 
@@ -45,7 +62,9 @@ fun ChatPrimaryButton(
 @Composable
 @Preview
 fun PreviewChatPrimaryButton() {
-    ChatPrimaryButton(title = "Primary button") {
+    ChatAppTheme {
+        ChatPrimaryButton(title = "Primary button") {
 
+        }
     }
 }
