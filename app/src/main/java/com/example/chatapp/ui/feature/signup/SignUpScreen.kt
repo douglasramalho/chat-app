@@ -42,6 +42,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.chatapp.R
 import com.example.chatapp.model.AuthResult
 import com.example.chatapp.ui.component.ChatPrimaryButton
+import com.example.chatapp.ui.component.ProfilePicture
 import com.example.chatapp.ui.component.SecondaryTextField
 import com.example.chatapp.ui.theme.ChatAppTheme
 
@@ -154,12 +155,7 @@ private fun SignUpScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_upload_photo),
-                contentDescription = null
-            )
-
-            Text(text = "Add photo")
+            ProfilePicture()
 
             Spacer(modifier = Modifier.height(30.dp))
 
