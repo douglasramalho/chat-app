@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.feature.signup
 
+import android.net.Uri
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -34,7 +34,6 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -84,6 +83,7 @@ fun SignUpRoute(
     SignUpScreen(
         modifier = modifier,
         state = state,
+        onPhotoSelected = viewModel::onProfilePictureSelected,
         usernameChanged = {
             viewModel.onEvent(SignUpUiEvent.UsernameChanged(it))
         },
@@ -113,6 +113,7 @@ fun SignUpRoute(
 private fun SignUpScreen(
     modifier: Modifier,
     state: SignUpState,
+    onPhotoSelected: (uri: Uri) -> Unit,
     usernameChanged: (username: String) -> Unit,
     passwordChanged: (password: String) -> Unit,
     firstNameChanged: (firstName: String) -> Unit,
@@ -155,7 +156,9 @@ private fun SignUpScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProfilePicture()
+            ProfilePicture {
+                onPhotoSelected(it)
+            }
 
             Spacer(modifier = Modifier.height(30.dp))
 
@@ -278,6 +281,7 @@ fun PreviewSignInScreen() {
             SignUpScreen(
                 modifier = Modifier,
                 state = SignUpState(),
+                {},
                 {},
                 {},
                 {},

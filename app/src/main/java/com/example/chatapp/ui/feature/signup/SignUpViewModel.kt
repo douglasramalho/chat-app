@@ -1,11 +1,13 @@
 package com.example.chatapp.ui.feature.signup
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.mediastorage.MediaStorageHelper
 import com.example.chatapp.model.AuthResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -16,9 +18,12 @@ import javax.inject.Inject
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val mediaStorageHelper: MediaStorageHelper,
 ) : ViewModel() {
 
     var state by mutableStateOf(SignUpState())
+
+    var profilePictureUri by mutableStateOf<Uri?>(null)
 
     private val resultChannel = Channel<AuthResult<Unit>>()
     val authResult = resultChannel.receiveAsFlow()
@@ -50,7 +55,8 @@ class SignUpViewModel @Inject constructor(
             }
 
             SignUpUiEvent.SignUp -> {
-                signUp()
+                uploadProfilePicture()
+                // signUp()
             }
         }
     }
@@ -68,6 +74,16 @@ class SignUpViewModel @Inject constructor(
             resultChannel.send(result)
 
             state = state.copy(isLoading = false)
+        }
+    }
+
+    fun onProfilePictureSelected(uri: Uri) {
+        profilePictureUri = uri
+    }
+
+    fun uploadProfilePicture() {
+        profilePictureUri?.let {
+            mediaStorageHelper.uploadImage("profilePicture", it)
         }
     }
 

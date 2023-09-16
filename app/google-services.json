@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "187137580232",
+    "project_id": "droidchat-e0397",
+    "storage_bucket": "droidchat-e0397.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:187137580232:android:01c37527fce1dac5cd19fd",
+        "android_client_info": {
+          "package_name": "com.example.chatapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC0c0kT1NVfh7BHIMNmKHeZ4ng85rKpVzA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

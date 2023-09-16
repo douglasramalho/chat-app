@@ -28,7 +28,9 @@ import com.example.chatapp.R
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
-fun ProfilePicture() {
+fun ProfilePicture(
+    onPhotoSelected: (uri: Uri) -> Unit
+) {
     var hasImage by rememberSaveable {
         mutableStateOf(false)
     }
@@ -70,6 +72,7 @@ fun ProfilePicture() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (hasImage && profilePictureUri != null) {
+            onPhotoSelected(profilePictureUri!!)
             AsyncImage(
                 model = profilePictureUri,
                 contentDescription = null,
@@ -110,6 +113,8 @@ fun ProfilePicture() {
 @Preview(showBackground = true)
 fun PreviewProfilePicture() {
     ChatAppTheme {
-        ProfilePicture()
+        ProfilePicture {
+
+        }
     }
 }
