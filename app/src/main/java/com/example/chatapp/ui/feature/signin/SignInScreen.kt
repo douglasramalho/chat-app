@@ -44,7 +44,7 @@ fun SignInRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSignUpClicked: () -> Unit
 ) {
-    val state = viewModel.state
+    val state = viewModel.formState
     val context = LocalContext.current
     LaunchedEffect(viewModel, context) {
         viewModel.authResult.collect { result ->
@@ -74,11 +74,11 @@ fun SignInRoute(
 
     SignInScreen(
         modifier = modifier,
-        state = state,
-        usernameChanged = {
+        formState = state,
+        onEmailChanged = {
             viewModel.onEvent(SignInUiEvent.UsernameChanged(it))
         },
-        passwordChanged = {
+        onPasswordChanged = {
             viewModel.onEvent(SignInUiEvent.PasswordChanged(it))
         },
         signInClicked = {
@@ -93,9 +93,9 @@ fun SignInRoute(
 @Composable
 private fun SignInScreen(
     modifier: Modifier,
-    state: SignInState,
-    usernameChanged: (username: String) -> Unit,
-    passwordChanged: (password: String) -> Unit,
+    formState: SignInState,
+    onEmailChanged: (username: String) -> Unit,
+    onPasswordChanged: (password: String) -> Unit,
     signInClicked: () -> Unit,
     signUpClicked: () -> Unit
 ) {
@@ -115,6 +115,8 @@ private fun SignInScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val context = LocalContext.current
+
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = null
@@ -123,32 +125,32 @@ private fun SignInScreen(
         Spacer(modifier = Modifier.height(78.dp))
 
         PrimaryChatTextField(
-            value = state.username,
+            value = formState.email,
             leftIcon = R.drawable.ic_envelope,
             placeholder = "E-mail",
-            keyboardType = KeyboardType.Email
-        ) {
-            usernameChanged(it)
-        }
+            errorMessage = formState.emailError?.let { context.getString(it, "E-mail") },
+            keyboardType = KeyboardType.Email,
+            onInputChange = onEmailChanged::invoke
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
         PrimaryChatTextField(
-            value = state.password,
+            value = formState.password,
             leftIcon = R.drawable.ic_lock,
             placeholder = "Password",
+            errorMessage = formState.passwordError?.let { context.getString(it, "Password") },
             imeAction = ImeAction.Done,
-            keyboardType = KeyboardType.Password
-        ) {
-            passwordChanged(it)
-        }
+            keyboardType = KeyboardType.Password,
+            onInputChange = onPasswordChanged::invoke
+        )
 
         Spacer(modifier = Modifier.height(64.dp))
 
         ChatPrimaryButton(
             title = "Sign In",
             modifier = Modifier.fillMaxWidth(),
-            isLoading = state.isLoading
+            isLoading = formState.isLoading
         ) {
             signInClicked()
         }
@@ -209,7 +211,7 @@ fun PreviewSignInScreen() {
         Surface {
             SignInScreen(
                 modifier = Modifier,
-                state = SignInState(),
+                formState = SignInState(),
                 {},
                 {},
                 {},

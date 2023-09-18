@@ -52,7 +52,7 @@ fun SignUpRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSigInClicked: () -> Unit,
 ) {
-    val state = viewModel.state
+    val state = viewModel.formState
     val context = LocalContext.current
     LaunchedEffect(viewModel, context) {
         viewModel.authResult.collect { result ->
@@ -82,25 +82,27 @@ fun SignUpRoute(
 
     SignUpScreen(
         modifier = modifier,
-        state = state,
-        onPhotoSelected = viewModel::onProfilePictureSelected,
-        usernameChanged = {
-            viewModel.onEvent(SignUpUiEvent.UsernameChanged(it))
+        formState = state,
+        onPhotoSelected = {
+            viewModel.onEvent(SignUpEvent.ProfilePhotoUriChanged(it))
         },
-        passwordChanged = {
-            viewModel.onEvent(SignUpUiEvent.PasswordChanged(it))
+        onFirstNameChanged = {
+            viewModel.onEvent(SignUpEvent.FirstNameChanged(it))
         },
-        firstNameChanged = {
-            viewModel.onEvent(SignUpUiEvent.FirstNameChanged(it))
+        onLastNameChanged = {
+            viewModel.onEvent(SignUpEvent.LastNameChanged(it))
         },
-        lastNameChanged = {
-            viewModel.onEvent(SignUpUiEvent.LastNameChanged(it))
+        onEmailChanged = {
+            viewModel.onEvent(SignUpEvent.EmailChanged(it))
         },
-        profilePictureChanged = {
-            viewModel.onEvent(SignUpUiEvent.ProfilePictureUrlChanged(it))
+        onPasswordChanged = {
+            viewModel.onEvent(SignUpEvent.PasswordChanged(it))
+        },
+        onPasswordConfirmationChanged = {
+            viewModel.onEvent(SignUpEvent.PasswordConfirmationChanged(it))
         },
         signUpClicked = {
-            viewModel.onEvent(SignUpUiEvent.SignUp)
+            viewModel.onEvent(SignUpEvent.Submit)
         },
         signInClicked = {
             navigateWhenSigInClicked()
@@ -112,13 +114,13 @@ fun SignUpRoute(
 @Composable
 private fun SignUpScreen(
     modifier: Modifier,
-    state: SignUpState,
+    formState: SignUpState,
     onPhotoSelected: (uri: Uri) -> Unit,
-    usernameChanged: (username: String) -> Unit,
-    passwordChanged: (password: String) -> Unit,
-    firstNameChanged: (firstName: String) -> Unit,
-    lastNameChanged: (lastName: String) -> Unit,
-    profilePictureChanged: (profilePictureUrl: String?) -> Unit,
+    onFirstNameChanged: (firstName: String) -> Unit,
+    onLastNameChanged: (lastName: String) -> Unit,
+    onEmailChanged: (email: String) -> Unit,
+    onPasswordChanged: (password: String) -> Unit,
+    onPasswordConfirmationChanged: (password: String) -> Unit,
     signUpClicked: () -> Unit,
     signInClicked: () -> Unit,
 ) {
@@ -156,6 +158,8 @@ private fun SignUpScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            val context = LocalContext.current
+
             ProfilePicture {
                 onPhotoSelected(it)
             }
@@ -164,26 +168,35 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "First name",
-            ) {
-
-            }
+                value = formState.firstName,
+                errorMessage = formState.firstNameError?.let {
+                    context.getString(it, "First name")
+                },
+                onInputChange = onFirstNameChanged::invoke
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             SecondaryTextField(
                 label = "Last name",
-            ) {
-
-            }
+                value = formState.lastName,
+                errorMessage = formState.lastNameError?.let {
+                    context.getString(it, "Last name")
+                },
+                onInputChange = onLastNameChanged::invoke
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
             SecondaryTextField(
                 label = "E-mail",
-                keyboardType = KeyboardType.Email
-            ) {
-
-            }
+                value = formState.email,
+                keyboardType = KeyboardType.Email,
+                errorMessage = formState.emailError?.let {
+                    context.getString(it, "Email")
+                },
+                onInputChange = onEmailChanged::invoke
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -201,21 +214,31 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "Password",
+                value = formState.password,
                 extraText = extraText,
+                errorMessage = formState.passwordError?.let {
+                    context.getString(it)
+                },
                 keyboardType = KeyboardType.Password
             ) {
                 password = it
+                onPasswordChanged(it)
             }
 
             Spacer(modifier = Modifier.height(32.dp))
 
             SecondaryTextField(
                 label = "Password confirmation",
+                value = formState.passwordConfirmation,
                 extraText = extraText,
+                errorMessage = formState.passwordError?.let {
+                    context.getString(it)
+                },
                 imeAction = ImeAction.Done,
                 keyboardType = KeyboardType.Password
             ) {
                 passwordConfirmation = it
+                onPasswordConfirmationChanged(it)
             }
 
             Spacer(modifier = Modifier.height(36.dp))
@@ -223,10 +246,9 @@ private fun SignUpScreen(
             ChatPrimaryButton(
                 title = "Sign Up",
                 modifier = Modifier.fillMaxWidth(),
-                isLoading = state.isLoading
-            ) {
-                signUpClicked()
-            }
+                isLoading = formState.isLoading,
+                onClick = signUpClicked::invoke
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -280,7 +302,7 @@ fun PreviewSignInScreen() {
         Surface {
             SignUpScreen(
                 modifier = Modifier,
-                state = SignUpState(),
+                formState = SignUpState(),
                 {},
                 {},
                 {},

@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">ChatApp</string>
+    <string name="error_message_field_blank">%1s can\'t be blank</string>
+    <string name="error_message_email_invalid">E-mail is invalid</string>
+    <string name="error_message_password_less_than_eight_chars">Password should consist of at least 8 chars</string>
+    <string name="error_message_password_invalid">Password should contain at least one letter and digit</string>
+    <string name="error_message_password_confirmation_invalid">Password confirmation does not match</string>
 </resources>

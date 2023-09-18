@@ -4,14 +4,15 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,15 +28,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.chatapp.R
 import com.example.chatapp.ui.extension.isPassword
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PrimaryChatTextField(
     value: String,
     @DrawableRes leftIcon: Int? = null,
     placeholder: String = "",
+    errorMessage: String? = null,
     imeAction: ImeAction = ImeAction.Next,
     keyboardType: KeyboardType = KeyboardType.Text,
     onInputChange: (text: String) -> Unit
@@ -99,17 +101,30 @@ fun PrimaryChatTextField(
                 keyboardType = keyboardType,
                 imeAction = imeAction
             ),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = MaterialTheme.colorScheme.surface,
-                unfocusedBorderColor = MaterialTheme.colorScheme.surface,
-                focusedBorderColor = MaterialTheme.colorScheme.primary
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                disabledContainerColor = MaterialTheme.colorScheme.surface,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedBorderColor = if (errorMessage != null) {
+                    MaterialTheme.colorScheme.error
+                } else MaterialTheme.colorScheme.surface
             )
         )
+
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage,
+                modifier = Modifier.padding(start = 16.dp),
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
     }
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview(showBackground = false)
 fun PrimaryChatTextFieldEmailPreview() {
     PrimaryChatTextField(
         value = "",
@@ -121,13 +136,26 @@ fun PrimaryChatTextFieldEmailPreview() {
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview(showBackground = false)
 fun PrimaryChatTextFieldPasswordPreview() {
     PrimaryChatTextField(
         value = "123456",
         leftIcon = R.drawable.ic_lock,
         placeholder = "Password",
         keyboardType = KeyboardType.Password,
+        onInputChange = {}
+    )
+}
+
+@Composable
+@Preview(showBackground = false)
+fun PrimaryChatTextFieldErrorPreview() {
+    PrimaryChatTextField(
+        value = "",
+        leftIcon = R.drawable.ic_envelope,
+        placeholder = "E-mail",
+        errorMessage = "Invalid",
+        keyboardType = KeyboardType.Email,
         onInputChange = {}
     )
 }

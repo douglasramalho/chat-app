@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.component
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,7 @@ fun SecondaryTextField(
     label: String,
     value: String = "",
     extraText: String = "",
+    errorMessage: String? = null,
     keyboardType: KeyboardType = KeyboardType.Text,
     imeAction: ImeAction = ImeAction.Next,
     onInputChange: (text: String) -> Unit
@@ -62,8 +64,7 @@ fun SecondaryTextField(
         },
         modifier = Modifier
             .fillMaxWidth()
-            .background(color = Color.White)
-            .bottomBorder(1.dp, Color.Black),
+            .background(color = Color.White),
         textStyle = MaterialTheme.typography.bodyMedium,
         keyboardOptions = KeyboardOptions(
             capitalization = if (keyboardType == KeyboardType.Text) {
@@ -81,59 +82,76 @@ fun SecondaryTextField(
 
         } else VisualTransformation.None,
         decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column(
+            Column {
+                Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f)
+                        .bottomBorder(
+                            strokeWidth = 1.dp,
+                            color = errorMessage?.let {
+                                MaterialTheme.colorScheme.error
+                            } ?: Color.Black
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = label,
-                        style = MaterialTheme.typography.bodyLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Column(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .weight(1f)
                     ) {
-                        //this must be called once and in any part of this lambda we want to put it
-                        Box(modifier = Modifier.weight(1f)) {
-                            innerTextField()
-                        }
-
                         Text(
-                            text = extraText,
-                            modifier = Modifier.padding(4.dp),
-                            color = ColorSuccess,
-                            style = MaterialTheme.typography.bodySmall,
+                            text = label,
+                            style = MaterialTheme.typography.bodyLarge,
                             fontWeight = FontWeight.Bold
                         )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                        ) {
+                            //this must be called once and in any part of this lambda we want to put it
+                            Box(modifier = Modifier.weight(1f)) {
+                                innerTextField()
+                            }
+
+                            Text(
+                                text = extraText,
+                                modifier = Modifier.padding(4.dp),
+                                color = ColorSuccess,
+                                style = MaterialTheme.typography.bodySmall,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+
+                    if (keyboardType.isPassword() && input.isNotEmpty()) {
+                        val visibilityIcon = if (passwordVisibility) {
+                            R.drawable.ic_visibility
+                        } else R.drawable.ic_visibility_off
+
+                        IconButton(
+                            onClick = {
+                                passwordVisibility = !passwordVisibility
+                            },
+                            modifier = Modifier
+                                .size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(id = visibilityIcon),
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
                     }
                 }
 
-                if (keyboardType.isPassword() && input.isNotEmpty()) {
-                    val visibilityIcon = if (passwordVisibility) {
-                        R.drawable.ic_visibility
-                    } else R.drawable.ic_visibility_off
-
-                    IconButton(
-                        onClick = {
-                            passwordVisibility = !passwordVisibility
-                        },
-                        modifier = Modifier
-                            .size(24.dp)
-                    ) {
-                        Icon(
-                            painter = painterResource(id = visibilityIcon),
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
+                if (errorMessage != null) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
                 }
             }
         }
@@ -178,6 +196,18 @@ fun SecondaryTextFieldPasswordPreview() {
         value = "123456",
         extraText = "as senhas são iguais",
         keyboardType = KeyboardType.Password
+    ) {
+
+    }
+}
+
+@Composable
+@Preview
+fun SecondaryTextFieldNormalWithErroPreview() {
+    SecondaryTextField(
+        label = "First name",
+        value = "Douglas",
+        errorMessage = "Error"
     ) {
 
     }

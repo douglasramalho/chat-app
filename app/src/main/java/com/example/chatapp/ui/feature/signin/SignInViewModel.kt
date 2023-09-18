@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.domain.ValidateEmailFieldUseCase
+import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.model.AuthResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -16,9 +18,11 @@ import javax.inject.Inject
 @HiltViewModel
 class SignInViewModel @Inject constructor(
     private val authRepository: AuthRepository,
+    private val validateEmptyFieldUseCase: ValidateEmptyFieldUseCase,
+    private val validateEmailFieldUseCase: ValidateEmailFieldUseCase,
 ) : ViewModel() {
 
-    var state by mutableStateOf(SignInState())
+    var formState by mutableStateOf(SignInState())
 
     private val resultChannel = Channel<AuthResult<Unit>>()
     val authResult = resultChannel.receiveAsFlow()
@@ -30,38 +34,53 @@ class SignInViewModel @Inject constructor(
     fun onEvent(event: SignInUiEvent) {
         when (event) {
             is SignInUiEvent.UsernameChanged -> {
-                state = state.copy(username = event.value)
+                formState = formState.copy(email = event.value)
             }
 
             is SignInUiEvent.PasswordChanged -> {
-                state = state.copy(password = event.value)
+                formState = formState.copy(password = event.value)
             }
 
             SignInUiEvent.SignIn -> {
-                signIn()
+                if (isFormValid()) {
+                    signIn()
+                }
             }
         }
     }
 
+    private fun isFormValid(): Boolean {
+        val emailValidationResult = validateEmailFieldUseCase(formState.email)
+        formState = formState.copy(emailError = emailValidationResult.errorMessage)
+
+        val passwordValidationResult = validateEmptyFieldUseCase(formState.password)
+        formState = formState.copy(passwordError = passwordValidationResult.errorMessage)
+
+        return listOf(
+            emailValidationResult.successful,
+            passwordValidationResult.successful,
+        ).all { it }
+    }
+
     private fun signIn() {
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            formState = formState.copy(isLoading = true)
             val result = authRepository.signIn(
-                username = state.username,
-                password = state.password
+                username = formState.email,
+                password = formState.password
             )
             resultChannel.send(result)
 
-            state = state.copy(isLoading = false)
+            formState = formState.copy(isLoading = false)
         }
     }
 
     private fun authenticate() {
         viewModelScope.launch {
-            state = state.copy(isLoading = true)
+            formState = formState.copy(isLoading = true)
             val result = authRepository.authenticate()
             resultChannel.send(result)
-            state = state.copy(isLoading = false)
+            formState = formState.copy(isLoading = false)
         }
     }
 }
