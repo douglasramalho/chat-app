@@ -4,7 +4,6 @@ import android.net.Uri
 import androidx.annotation.StringRes
 
 data class SignUpState(
-    val isLoading: Boolean = false,
     val profilePhotoUri: Uri? = null,
     val firstName: String = "",
     @StringRes val firstNameError: Int? = null,

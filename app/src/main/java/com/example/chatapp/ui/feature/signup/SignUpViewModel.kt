@@ -6,14 +6,17 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatapp.model.Result
 import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.domain.ValidatePasswordFieldUseCase
 import com.example.chatapp.mediastorage.MediaStorageHelper
-import com.example.chatapp.model.AuthResult
+import com.example.chatapp.model.AppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -31,11 +34,15 @@ class SignUpViewModel @Inject constructor(
 
     var profilePictureUri by mutableStateOf<Uri?>(null)
 
-    private val resultChannel = Channel<AuthResult<Unit>>()
-    val authResult = resultChannel.receiveAsFlow()
+    private val _signUpResultUiState =
+        MutableStateFlow<SignUpResultUiState>(SignUpResultUiState.Success)
+    val signUpResultUiState = _signUpResultUiState.asStateFlow()
+
+    private val _navigateAfterSigningUpSuccessfully = Channel<Unit>()
+    val navigateAfterSigningUpSuccessfully = _navigateAfterSigningUpSuccessfully.receiveAsFlow()
 
     init {
-        // authenticate()
+        authenticate()
     }
 
     fun onEvent(event: SignUpEvent) {
@@ -83,7 +90,8 @@ class SignUpViewModel @Inject constructor(
         val emailValidationResult = validateEmailFieldUseCase(formState.email)
         formState = formState.copy(emailError = emailValidationResult.errorMessage)
 
-        val passwordValidationResult = validatePasswordFieldUseCase(formState.password, formState.passwordConfirmation)
+        val passwordValidationResult =
+            validatePasswordFieldUseCase(formState.password, formState.passwordConfirmation)
         formState = formState.copy(passwordError = passwordValidationResult.errorMessage)
 
         return listOf(
@@ -96,17 +104,27 @@ class SignUpViewModel @Inject constructor(
 
     private fun signUp() {
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
-            val result = authRepository.signUp(
+            authRepository.signUp(
                 username = formState.email,
                 password = formState.password,
                 firstName = formState.firstName,
                 lastName = formState.lastName,
                 profilePictureUrl = null
-            )
-            resultChannel.send(result)
+            ).collect { result ->
+                _signUpResultUiState.value = when (result) {
+                    Result.Loading -> SignUpResultUiState.Loading
 
-            formState = formState.copy(isLoading = false)
+                    is Result.Success -> {
+                        _navigateAfterSigningUpSuccessfully.send(Unit)
+                        SignUpResultUiState.Success
+                    }
+
+                    is Result.Error -> when (result.exception) {
+                        AppError.ApiError.Conflict -> SignUpResultUiState.Error.UserWithUsernameAlreadyExists
+                        else -> SignUpResultUiState.Error.Generic
+                    }
+                }
+            }
         }
     }
 
@@ -122,10 +140,24 @@ class SignUpViewModel @Inject constructor(
 
     private fun authenticate() {
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
             val result = authRepository.authenticate()
-            resultChannel.send(result)
-            formState = formState.copy(isLoading = false)
+            if (result is Result.Success) {
+                _navigateAfterSigningUpSuccessfully.send(Unit)
+            }
         }
+    }
+
+    fun resetSignUpResultUiState() {
+        _signUpResultUiState.value = SignUpResultUiState.Success
+    }
+
+    sealed interface SignUpResultUiState {
+        data object Loading : SignUpResultUiState
+        sealed interface Error : SignUpResultUiState {
+            data object UserWithUsernameAlreadyExists : Error
+            data object Generic : Error
+        }
+
+        data object Success : SignUpResultUiState
     }
 }

@@ -5,12 +5,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatapp.model.Result
 import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
-import com.example.chatapp.model.AuthResult
+import com.example.chatapp.model.AppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,8 +27,12 @@ class SignInViewModel @Inject constructor(
 
     var formState by mutableStateOf(SignInState())
 
-    private val resultChannel = Channel<AuthResult<Unit>>()
-    val authResult = resultChannel.receiveAsFlow()
+    private val _signInResultUiState =
+        MutableStateFlow<SignInResultUiState>(SignInResultUiState.Success)
+    val signInResultUiState = _signInResultUiState.asStateFlow()
+
+    private val _navigateWhenSigningSuccessfully = Channel<Unit>()
+    val navigateWhenSigningSuccessfully = _navigateWhenSigningSuccessfully.receiveAsFlow()
 
     init {
         authenticate()
@@ -64,23 +71,46 @@ class SignInViewModel @Inject constructor(
 
     private fun signIn() {
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
-            val result = authRepository.signIn(
+            authRepository.signIn(
                 username = formState.email,
                 password = formState.password
-            )
-            resultChannel.send(result)
+            ).collect { result ->
+                _signInResultUiState.value = when (result) {
+                    Result.Loading -> SignInResultUiState.Loading
+                    is Result.Success -> {
+                        _navigateWhenSigningSuccessfully.send(Unit)
+                        SignInResultUiState.Success
+                    }
 
-            formState = formState.copy(isLoading = false)
+                    is Result.Error -> when (result.exception) {
+                        AppError.ApiError.Conflict -> SignInResultUiState.Error.InvalidUsernameOrPassword
+                        else -> SignInResultUiState.Error.Generic
+                    }
+                }
+            }
         }
     }
 
     private fun authenticate() {
         viewModelScope.launch {
-            formState = formState.copy(isLoading = true)
             val result = authRepository.authenticate()
-            resultChannel.send(result)
-            formState = formState.copy(isLoading = false)
+            if (result is Result.Success) {
+                _navigateWhenSigningSuccessfully.send(Unit)
+            }
         }
+    }
+
+    fun resetSignInResultUiState() {
+        _signInResultUiState.value = SignInResultUiState.Success
+    }
+
+    sealed interface SignInResultUiState {
+        data object Loading : SignInResultUiState
+        sealed interface Error : SignInResultUiState {
+            data object InvalidUsernameOrPassword : Error
+            data object Generic : Error
+        }
+
+        data object Success : SignInResultUiState
     }
 }

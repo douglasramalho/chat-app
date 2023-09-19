@@ -1,6 +1,5 @@
 package com.example.chatapp.ui.feature.signin
 
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -12,10 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -31,11 +34,12 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatapp.R
-import com.example.chatapp.model.AuthResult
 import com.example.chatapp.ui.component.ChatPrimaryButton
 import com.example.chatapp.ui.component.PrimaryChatTextField
 import com.example.chatapp.ui.theme.ChatAppTheme
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignInRoute(
@@ -44,37 +48,21 @@ fun SignInRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSignUpClicked: () -> Unit
 ) {
+    val signInResultUiState by viewModel.signInResultUiState.collectAsStateWithLifecycle()
     val state = viewModel.formState
+
     val context = LocalContext.current
     LaunchedEffect(viewModel, context) {
-        viewModel.authResult.collect { result ->
-            when (result) {
-                is AuthResult.Authorized -> {
-                    navigateWhenAuthorized()
-                }
-
-                is AuthResult.Unauthorized -> {
-                    Toast.makeText(
-                        context,
-                        "You're not authorized",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                is AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "An unknown error occurred",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
+        viewModel.navigateWhenSigningSuccessfully.collectLatest {
+            navigateWhenAuthorized()
         }
     }
 
     SignInScreen(
         modifier = modifier,
+        signInResultUiState = signInResultUiState,
         formState = state,
+        onAlertDialogDismiss = { viewModel.resetSignInResultUiState() },
         onEmailChanged = {
             viewModel.onEvent(SignInUiEvent.UsernameChanged(it))
         },
@@ -93,12 +81,43 @@ fun SignInRoute(
 @Composable
 private fun SignInScreen(
     modifier: Modifier,
+    signInResultUiState: SignInViewModel.SignInResultUiState,
     formState: SignInState,
+    onAlertDialogDismiss: () -> Unit,
     onEmailChanged: (username: String) -> Unit,
     onPasswordChanged: (password: String) -> Unit,
     signInClicked: () -> Unit,
     signUpClicked: () -> Unit
 ) {
+    val context = LocalContext.current
+
+    if (signInResultUiState is SignInViewModel.SignInResultUiState.Error) {
+        val errorMessageRes = when (signInResultUiState) {
+            SignInViewModel.SignInResultUiState.Error.InvalidUsernameOrPassword ->
+                R.string.error_message_sign_in_invalid_username_or_password
+
+            SignInViewModel.SignInResultUiState.Error.Generic ->
+                R.string.common_generic_error_message
+        }
+
+        AlertDialog(
+            onDismissRequest = onAlertDialogDismiss,
+            confirmButton = {
+                TextButton(
+                    onClick = onAlertDialogDismiss
+                ) {
+                    Text(text = context.getString(R.string.common_ok))
+                }
+            },
+            title = {
+                Text(text = context.getString(R.string.common_generic_error_title))
+            },
+            text = {
+                Text(text = context.getString(errorMessageRes))
+            }
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -150,7 +169,7 @@ private fun SignInScreen(
         ChatPrimaryButton(
             title = "Sign In",
             modifier = Modifier.fillMaxWidth(),
-            isLoading = formState.isLoading
+            isLoading = signInResultUiState is SignInViewModel.SignInResultUiState.Loading
         ) {
             signInClicked()
         }
@@ -211,7 +230,9 @@ fun PreviewSignInScreen() {
         Surface {
             SignInScreen(
                 modifier = Modifier,
+                signInResultUiState = SignInViewModel.SignInResultUiState.Success,
                 formState = SignInState(),
+                {},
                 {},
                 {},
                 {},

@@ -5,4 +5,9 @@
     <string name="error_message_password_less_than_eight_chars">Password should consist of at least 8 chars</string>
     <string name="error_message_password_invalid">Password should contain at least one letter and digit</string>
     <string name="error_message_password_confirmation_invalid">Password confirmation does not match</string>
+    <string name="error_message_sign_up_user_with_username_already_exists">User with this username already exits</string>
+    <string name="error_message_sign_in_invalid_username_or_password">Invalid username or password</string>
+    <string name="common_generic_error_title">Something went wrong</string>
+    <string name="common_generic_error_message">Something went wrong in the app. Try again or report a bug</string>
+    <string name="common_ok">OK</string>
 </resources>

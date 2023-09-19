@@ -1,7 +1,6 @@
 package com.example.chatapp.ui.feature.signup
 
 import android.net.Uri
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -15,9 +14,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.ClickableText
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -38,12 +40,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatapp.R
-import com.example.chatapp.model.AuthResult
 import com.example.chatapp.ui.component.ChatPrimaryButton
 import com.example.chatapp.ui.component.ProfilePicture
 import com.example.chatapp.ui.component.SecondaryTextField
 import com.example.chatapp.ui.theme.ChatAppTheme
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpRoute(
@@ -52,37 +55,22 @@ fun SignUpRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSigInClicked: () -> Unit,
 ) {
-    val state = viewModel.formState
+    val signUpResultUiState by viewModel.signUpResultUiState.collectAsStateWithLifecycle()
+    val formState = viewModel.formState
+
     val context = LocalContext.current
+
     LaunchedEffect(viewModel, context) {
-        viewModel.authResult.collect { result ->
-            when (result) {
-                is AuthResult.Authorized -> {
-                    navigateWhenAuthorized()
-                }
-
-                is AuthResult.Unauthorized -> {
-                    Toast.makeText(
-                        context,
-                        "You're not authorized",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-                is AuthResult.UnknownError -> {
-                    Toast.makeText(
-                        context,
-                        "An unknown error occurred",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
+        viewModel.navigateAfterSigningUpSuccessfully.collectLatest {
+            navigateWhenAuthorized()
         }
     }
 
     SignUpScreen(
         modifier = modifier,
-        formState = state,
+        signUpResultUiState = signUpResultUiState,
+        formState = formState,
+        onAlertDialogDismiss = { viewModel.resetSignUpResultUiState() },
         onPhotoSelected = {
             viewModel.onEvent(SignUpEvent.ProfilePhotoUriChanged(it))
         },
@@ -110,11 +98,12 @@ fun SignUpRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun SignUpScreen(
     modifier: Modifier,
+    signUpResultUiState: SignUpViewModel.SignUpResultUiState,
     formState: SignUpState,
+    onAlertDialogDismiss: () -> Unit,
     onPhotoSelected: (uri: Uri) -> Unit,
     onFirstNameChanged: (firstName: String) -> Unit,
     onLastNameChanged: (lastName: String) -> Unit,
@@ -124,6 +113,35 @@ private fun SignUpScreen(
     signUpClicked: () -> Unit,
     signInClicked: () -> Unit,
 ) {
+    val context = LocalContext.current
+
+    if (signUpResultUiState is SignUpViewModel.SignUpResultUiState.Error) {
+        val errorMessageRes = when (signUpResultUiState) {
+            SignUpViewModel.SignUpResultUiState.Error.UserWithUsernameAlreadyExists ->
+                R.string.error_message_sign_up_user_with_username_already_exists
+
+            SignUpViewModel.SignUpResultUiState.Error.Generic ->
+                R.string.common_generic_error_message
+        }
+
+        AlertDialog(
+            onDismissRequest = onAlertDialogDismiss,
+            confirmButton = {
+                TextButton(
+                    onClick = onAlertDialogDismiss
+                ) {
+                    Text(text = context.getString(R.string.common_ok))
+                }
+            },
+            title = {
+                Text(text = context.getString(R.string.common_generic_error_title))
+            },
+            text = {
+                Text(text = context.getString(errorMessageRes))
+            }
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -158,8 +176,6 @@ private fun SignUpScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val context = LocalContext.current
-
             ProfilePicture {
                 onPhotoSelected(it)
             }
@@ -246,7 +262,7 @@ private fun SignUpScreen(
             ChatPrimaryButton(
                 title = "Sign Up",
                 modifier = Modifier.fillMaxWidth(),
-                isLoading = formState.isLoading,
+                isLoading = signUpResultUiState is SignUpViewModel.SignUpResultUiState.Loading,
                 onClick = signUpClicked::invoke
             )
 
@@ -302,7 +318,9 @@ fun PreviewSignInScreen() {
         Surface {
             SignUpScreen(
                 modifier = Modifier,
+                signUpResultUiState = SignUpViewModel.SignUpResultUiState.Success,
                 formState = SignUpState(),
+                {},
                 {},
                 {},
                 {},
