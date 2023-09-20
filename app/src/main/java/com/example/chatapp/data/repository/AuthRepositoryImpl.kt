@@ -23,7 +23,7 @@ class AuthRepositoryImpl @Inject constructor(
         password: String,
         firstName: String,
         lastName: String,
-        profilePictureUrl: String?,
+        profilePicturePath: String?,
     ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
         apiService.signUp(
@@ -32,7 +32,7 @@ class AuthRepositoryImpl @Inject constructor(
                 password = password,
                 firstName = firstName,
                 lastName = lastName,
-                profilePictureUrl = profilePictureUrl,
+                profilePicturePath = profilePicturePath,
             )
         )
 

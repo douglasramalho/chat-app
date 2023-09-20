@@ -2,7 +2,6 @@ package com.example.chatapp.data
 
 import android.util.Log
 import com.example.chatapp.data.remote.request.MessageRequest
-import com.example.chatapp.data.remote.request.RegisterCurrentScreenRequest
 import com.example.chatapp.data.remote.response.ConversationResponse
 import com.example.chatapp.data.remote.response.MessageResponse
 import com.example.chatapp.di.DefaultDispatcher
@@ -19,7 +18,6 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import java.lang.Exception
 import javax.inject.Inject
 
 sealed class SocketSessionResult {

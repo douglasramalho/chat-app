@@ -176,9 +176,9 @@ private fun SignUpScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            ProfilePicture {
-                onPhotoSelected(it)
-            }
+            ProfilePicture(
+                onPhotoSelected = onPhotoSelected::invoke
+            )
 
             Spacer(modifier = Modifier.height(30.dp))
 

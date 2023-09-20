@@ -1,24 +1,28 @@
 package com.example.chatapp.ui.feature.signup
 
-import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.chatapp.model.Result
 import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.domain.ValidatePasswordFieldUseCase
 import com.example.chatapp.mediastorage.MediaStorageHelper
 import com.example.chatapp.model.AppError
+import com.example.chatapp.model.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
@@ -31,8 +35,6 @@ class SignUpViewModel @Inject constructor(
 ) : ViewModel() {
 
     var formState by mutableStateOf(SignUpState())
-
-    var profilePictureUri by mutableStateOf<Uri?>(null)
 
     private val _signUpResultUiState =
         MutableStateFlow<SignUpResultUiState>(SignUpResultUiState.Success)
@@ -73,7 +75,6 @@ class SignUpViewModel @Inject constructor(
 
             SignUpEvent.Submit -> {
                 if (isFormValid()) {
-                    uploadProfilePicture()
                     signUp()
                 }
             }
@@ -102,39 +103,50 @@ class SignUpViewModel @Inject constructor(
         ).all { it }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     private fun signUp() {
         viewModelScope.launch {
-            authRepository.signUp(
-                username = formState.email,
-                password = formState.password,
-                firstName = formState.firstName,
-                lastName = formState.lastName,
-                profilePictureUrl = null
-            ).collect { result ->
-                _signUpResultUiState.value = when (result) {
-                    Result.Loading -> SignUpResultUiState.Loading
 
-                    is Result.Success -> {
-                        _navigateAfterSigningUpSuccessfully.send(Unit)
-                        SignUpResultUiState.Success
+            val profilePicturePath = "profilePicture/${UUID.randomUUID()}"
+            mediaStorageHelper.uploadImage(profilePicturePath, formState.profilePhotoUri)
+                .onStart {
+                    _signUpResultUiState.value = SignUpResultUiState.Loading
+                }
+                .flatMapLatest { result ->
+                    if (result is Result.Loading) {
+                        _signUpResultUiState.value = SignUpResultUiState.Loading
                     }
 
-                    is Result.Error -> when (result.exception) {
-                        AppError.ApiError.Conflict -> SignUpResultUiState.Error.UserWithUsernameAlreadyExists
-                        else -> SignUpResultUiState.Error.Generic
+                    authRepository.signUp(
+                        username = formState.email,
+                        password = formState.password,
+                        firstName = formState.firstName,
+                        lastName = formState.lastName,
+                        profilePicturePath = (result as? Result.Success)?.data
+                    )
+                }.collect { result ->
+                    _signUpResultUiState.value = when (result) {
+                        Result.Loading -> SignUpResultUiState.Loading
+
+                        is Result.Success -> {
+                            _navigateAfterSigningUpSuccessfully.send(Unit)
+                            SignUpResultUiState.Success
+                        }
+
+                        is Result.Error -> {
+                            formState.profilePhotoUri?.let {
+                                viewModelScope.launch {
+                                    mediaStorageHelper.removeImage(profilePicturePath).collect()
+                                }
+                            }
+
+                            when (result.exception) {
+                                AppError.ApiError.Conflict -> SignUpResultUiState.Error.UserWithUsernameAlreadyExists
+                                else -> SignUpResultUiState.Error.Generic
+                            }
+                        }
                     }
                 }
-            }
-        }
-    }
-
-    fun onProfilePictureSelected(uri: Uri) {
-        profilePictureUri = uri
-    }
-
-    fun uploadProfilePicture() {
-        profilePictureUri?.let {
-            mediaStorageHelper.uploadImage("profilePicture", it)
         }
     }
 
