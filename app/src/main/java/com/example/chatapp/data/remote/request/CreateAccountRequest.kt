@@ -5,5 +5,5 @@ data class CreateAccountRequest(
     val password: String,
     val firstName: String,
     val lastName: String,
-    val profilePicturePath: String?,
+    val profilePictureUrl: String?,
 )

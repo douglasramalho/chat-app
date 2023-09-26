@@ -5,52 +5,44 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.WindowInsetsSides
-import androidx.compose.foundation.layout.consumedWindowInsets
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FabPosition
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
-import com.example.chatapp.R
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.chatapp.navigation.ChatNavHost
 import com.example.chatapp.navigation.TopLevelDestination
+import com.example.chatapp.ui.component.ChatNavigationBar
+import com.example.chatapp.ui.theme.Grey1
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChatApp(
     appState: ChatAppState = rememberChatAppState()
 ) {
     Scaffold(
-        floatingActionButton = {
-            if (appState.currentTopLevelDestination == TopLevelDestination.CONVERSATIONS_LIST) {
-                FloatingActionButton(onClick = {
-                    appState.navController.navigate("userGraph")
-                }) {
-
-                }
+        bottomBar = {
+            if (appState.currentTopLevelDestination == TopLevelDestination.CHATS) {
+                ChatNavigationBar(
+                    destinations = appState.topLevelDestinations,
+                    currentDestination = appState.currentDestination,
+                    onDestinationSelected = appState::navigateToTopLevelDestination,
+                    modifier = Modifier.padding(top = 1.dp)
+                )
             }
         },
-        floatingActionButtonPosition = FabPosition.End
+        containerColor = Grey1
     ) { paddingValues ->
         Row(
             modifier = Modifier
                 .padding(paddingValues)
-                .consumedWindowInsets(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .windowInsetsPadding(
                     WindowInsets.safeDrawing.only(
                         WindowInsetsSides.Horizontal
@@ -62,4 +54,10 @@ fun ChatApp(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun PreviewChatApp() {
+    ChatApp()
 }

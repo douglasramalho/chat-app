@@ -20,9 +20,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.example.chatapp.R
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
@@ -34,66 +36,71 @@ fun ConversationItem(
     conversation: Conversation,
     onItemClicked: () -> Unit
 ) {
-    Card(
+    val profilePicture = conversation.getReceiverMember().profilePictureUrl?.let {
+        it
+    } ?: R.drawable.ic_upload_photo
+
+    Row(
         modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(20.dp)
             .fillMaxWidth()
             .clickable {
                 onItemClicked()
-            }
+            },
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = R.drawable.ic_launcher_background),
-                contentDescription = "Profile picture",
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .border(1.5.dp, MaterialTheme.colorScheme.primary)
+        AsyncImage(
+            model = profilePicture,
+            contentDescription = null,
+            modifier = Modifier
+                .size(58.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop
+        )
+
+        Spacer(modifier = Modifier.width(8.dp))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = conversation.getReceiverMember().firstName,
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleMedium
             )
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = conversation.getReceiverMember().firstName,
-                    color = MaterialTheme.colorScheme.secondary,
-                    style = MaterialTheme.typography.titleMedium
-                )
-
+            conversation.lastMessage?.let {
                 Spacer(modifier = Modifier.height(4.dp))
-
-                conversation.lastMessage?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
-            }
-
-            Column(horizontalAlignment = Alignment.End) {
                 Text(
-                    text = conversation.timestamp,
-                    style = MaterialTheme.typography.bodySmall
+                    text = it,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                if (conversation.unreadCount > 0) {
-                    Text(
-                        text = conversation.unreadCount.toString(),
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(horizontal = 5.dp),
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+            }
+        }
+
+        Column(horizontalAlignment = Alignment.End) {
+            Text(
+                text = conversation.timestamp,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            if (conversation.unreadCount > 0) {
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Text(
+                    text = conversation.unreadCount.toString(),
+                    modifier = Modifier
+                        .background(MaterialTheme.colorScheme.primary, CircleShape)
+                        .padding(horizontal = 5.dp),
+                    color = MaterialTheme.colorScheme.inverseOnSurface,
+                    style = MaterialTheme.typography.bodyMedium
+                )
             }
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun PreviewChatCard() {
     ChatAppTheme {
@@ -119,7 +126,7 @@ fun PreviewChatCard() {
                     )
                 ),
                 unreadCount = 2,
-                lastMessage = null,
+                lastMessage = "Olá",
                 timestamp = "9:00"
             ),
             onItemClicked = {}

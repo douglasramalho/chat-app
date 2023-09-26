@@ -122,7 +122,7 @@ class SignUpViewModel @Inject constructor(
                         password = formState.password,
                         firstName = formState.firstName,
                         lastName = formState.lastName,
-                        profilePicturePath = (result as? Result.Success)?.data
+                        profilePictureUrl = (result as? Result.Success)?.data
                     )
                 }.collect { result ->
                     _signUpResultUiState.value = when (result) {

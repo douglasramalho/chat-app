@@ -27,15 +27,16 @@ class FirebaseCloudStorageHelper @Inject constructor(
                     val uploadTask = imagesRef.putFile(uri)
 
                     uploadTask
+                        .continueWithTask {
+                            imagesRef.downloadUrl
+                        }
                         .addOnFailureListener {
                             trySend(Result.Error(it))
                         }
-                        .addOnCompleteListener {
-                            if (it.isSuccessful) {
-                                it.result.metadata?.name?.let { fileName ->
-                                    trySend(Result.Success(fileName))
-                                }
-                            } else trySend(Result.Error(it.exception))
+                        .addOnCompleteListener { task ->
+                            if (task.isSuccessful) {
+                                trySend(Result.Success(task.result.toString()))
+                            } else trySend(Result.Error(task.exception))
                         }
                 } ?: trySend(Result.Success(null))
             }

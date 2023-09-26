@@ -10,7 +10,7 @@ interface AuthRepository {
         password: String,
         firstName: String,
         lastName: String,
-        profilePicturePath: String?,
+        profilePictureUrl: String?,
     ): Flow<Result<Unit>>
 
     suspend fun signIn(username: String, password: String): Flow<Result<Unit>>

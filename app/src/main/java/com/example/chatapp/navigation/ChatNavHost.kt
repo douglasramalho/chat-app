@@ -1,11 +1,10 @@
 package com.example.chatapp.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navOptions
 import com.example.chatapp.ui.ChatAppState
-import com.example.chatapp.ui.ChatSocketViewModel
 import com.example.chatapp.ui.feature.signin.SignInRoute
 import com.example.chatapp.ui.feature.signup.SignUpRoute
 
@@ -20,11 +19,12 @@ fun ChatNavHost(
         composable("signIn") {
             SignInRoute(
                 navigateWhenAuthorized = {
-                    navController.navigate("conversationGraph") {
+                    val navOptions = navOptions {
                         popUpTo("signIn") {
                             inclusive = true
                         }
                     }
+                    navController.navigateToChats(navOptions)
                 },
                 navigateWhenSignUpClicked = {
                     navController.navigate("signUp") {
@@ -38,11 +38,12 @@ fun ChatNavHost(
         composable("signUp") {
             SignUpRoute(
                 navigateWhenAuthorized = {
-                    navController.navigate("conversationGraph") {
+                    val navOptions = navOptions {
                         popUpTo("signUp") {
                             inclusive = true
                         }
                     }
+                    navController.navigateToChats(navOptions)
                 },
                 navigateWhenSigInClicked = {
                     navController.navigate("signIn") {
@@ -54,7 +55,7 @@ fun ChatNavHost(
             )
         }
 
-        conversationNavGraph(
+        chatsNavGraph(
             navController = navController
         )
 

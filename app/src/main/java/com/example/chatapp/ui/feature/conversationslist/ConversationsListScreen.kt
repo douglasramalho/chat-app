@@ -1,39 +1,37 @@
 package com.example.chatapp.ui.feature.conversationslist
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CornerSize
+import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import com.example.chatapp.R
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
 import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.ChatSocketViewModel
 import com.example.chatapp.ui.component.ConversationItem
 import com.example.chatapp.ui.theme.ChatAppTheme
+import com.example.chatapp.ui.theme.Grey1
 
 @Composable
 fun ConversationsListRoute(
@@ -78,46 +76,57 @@ fun ConversationsListRoute(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun ConversationsListScreen(
     conversationsList: List<Conversation>,
     onIconButtonClicked: () -> Unit,
     onConversationItemClicked: (receiverId: String) -> Unit
 ) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(
+                color = MaterialTheme.colorScheme.inverseSurface
+            ),
+    ) {
+        Text(
+            text = "Bem vindo de volta, Douglas",
+            modifier = Modifier
+                .padding(vertical = 32.dp, horizontal = 20.dp)
+                .clickable {
+                    onIconButtonClicked()
+                },
+            color = MaterialTheme.colorScheme.inverseOnSurface,
+            style = MaterialTheme.typography.titleLarge
+        )
 
-    Row(modifier = Modifier.fillMaxSize()) {
-        Column {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "DroidZap",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = Color.White
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .background(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = MaterialTheme.shapes.extraLarge.copy(
+                        bottomStart = CornerSize(0.dp),
+                        bottomEnd = CornerSize(0.dp)
                     )
-                },
-                actions = {
-                    IconButton(onClick = {
-                        onIconButtonClicked()
-                    }) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_launcher_background),
-                            contentDescription = "",
-                            modifier = Modifier
-                                .clip(CircleShape),
-                            tint = Color.White
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(MaterialTheme.colorScheme.primary)
-            )
-
+                )
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             LazyColumn {
-                items(conversationsList) { conversation ->
+                itemsIndexed(conversationsList) { index, conversation ->
                     ConversationItem(
                         conversation = conversation
                     ) {
                         onConversationItemClicked(conversation.getReceiverMember().id)
+                    }
+
+                    if (index < conversationsList.lastIndex) {
+                        Divider(
+                            color = Grey1,
+                            thickness = 1.dp
+                        )
                     }
                 }
             }
@@ -153,23 +162,31 @@ fun PreviewConversationsListScreen() {
                             )
                         ),
                         unreadCount = 2,
-                        lastMessage = null,
+                        lastMessage = "Olá",
                         timestamp = "9:00"
                     ),
                     Conversation(
                         id = "2",
                         members = listOf(
                             ConversationMember(
-                                id = "",
+                                id = "1",
+                                isSelf = true,
+                                username = "",
+                                firstName = "Douglas",
+                                lastName = "",
+                                profilePictureUrl = null
+                            ),
+                            ConversationMember(
+                                id = "3",
                                 isSelf = false,
                                 username = "",
-                                firstName = "Raissa",
+                                firstName = "Diogo",
                                 lastName = "",
                                 profilePictureUrl = null
                             )
                         ),
                         unreadCount = 2,
-                        lastMessage = null,
+                        lastMessage = "Como vai?",
                         timestamp = "9:00"
                     ),
                 ),
