@@ -110,11 +110,12 @@ private fun ConversationsListScreen(
                         bottomStart = CornerSize(0.dp),
                         bottomEnd = CornerSize(0.dp)
                     )
-                )
-                .padding(16.dp),
+                ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            LazyColumn {
+            LazyColumn(
+                modifier = Modifier.padding(16.dp)
+            ) {
                 itemsIndexed(conversationsList) { index, conversation ->
                     ConversationItem(
                         conversation = conversation

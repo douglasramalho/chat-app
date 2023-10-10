@@ -122,11 +122,14 @@ class ChatSocketViewModel @Inject constructor(
 
     fun sendMessage() {
         viewModelScope.launch {
-            chatSocketRepository.sendMessage(
-                receiverId = _conversationState.value.receiver?.id ?: "",
-                message = messageTextState.value
-            )
-            _messageTextState.value = ""
+            val text = messageTextState.value.trim()
+            if (text.isNotEmpty()) {
+                chatSocketRepository.sendMessage(
+                    receiverId = _conversationState.value.receiver?.id ?: "",
+                    message = text
+                )
+                _messageTextState.value = ""
+            }
         }
     }
 
