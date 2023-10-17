@@ -15,7 +15,8 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val apiService: ChatApiService,
-    private val prefs: SharedPreferences
+    private val prefs: SharedPreferences,
+    private val localDataSource: LocalDataSource,
 ) : AuthRepository {
 
     override suspend fun signUp(
@@ -74,6 +75,8 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
+        localDataSource.clear()
+
         prefs.edit()
             .clear()
             .apply()

@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,63 +37,62 @@ fun ConversationItem(
     val profilePicture = conversation.getReceiverMember().profilePictureUrl
         ?: R.drawable.ic_upload_photo
 
-    Row(
+    Surface(
         modifier = Modifier
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(20.dp)
             .fillMaxWidth()
             .clickable {
                 onItemClicked()
-            },
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        AsyncImage(
-            model = profilePicture,
-            contentDescription = null,
-            modifier = Modifier
-                .size(58.dp)
-                .clip(CircleShape),
-            contentScale = ContentScale.Crop
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = conversation.getReceiverMember().firstName,
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            conversation.lastMessage?.let {
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = it.replace("\n", " "),
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
             }
-        }
-
-        Column(horizontalAlignment = Alignment.End) {
-            Text(
-                text = conversation.timestamp,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AsyncImage(
+                model = profilePicture,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(58.dp)
+                    .clip(CircleShape),
+                contentScale = ContentScale.Crop
             )
-            if (conversation.unreadCount > 0) {
-                Spacer(modifier = Modifier.height(8.dp))
 
+            Spacer(modifier = Modifier.width(8.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = conversation.unreadCount.toString(),
-                    modifier = Modifier
-                        .background(MaterialTheme.colorScheme.primary, CircleShape)
-                        .padding(horizontal = 5.dp),
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = conversation.getReceiverMember().firstName,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleMedium
                 )
+
+                conversation.lastMessage?.let {
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = it.replace("\n", " "),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
+
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = conversation.timestamp,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                if (conversation.unreadCount > 0) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Text(
+                        text = conversation.unreadCount.toString(),
+                        modifier = Modifier
+                            .background(MaterialTheme.colorScheme.primary, CircleShape)
+                            .padding(horizontal = 5.dp),
+                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
             }
         }
     }

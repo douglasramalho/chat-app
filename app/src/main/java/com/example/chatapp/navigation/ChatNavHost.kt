@@ -60,5 +60,7 @@ fun ChatNavHost(
         )
 
         userNavGraph(navController = navController)
+
+        profileNavGraph(navController = navController)
     }
 }

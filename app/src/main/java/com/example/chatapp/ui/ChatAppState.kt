@@ -10,8 +10,10 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.example.chatapp.navigation.CHATS_DESTINATION
+import com.example.chatapp.navigation.PROFILE_DESTINATION
 import com.example.chatapp.navigation.TopLevelDestination
 import com.example.chatapp.navigation.navigateToChats
+import com.example.chatapp.navigation.navigateToProfile
 import com.example.chatapp.navigation.navigateToUsers
 
 @Composable
@@ -34,6 +36,7 @@ class ChatAppState(
     val currentTopLevelDestination: TopLevelDestination?
         @Composable get() = when (currentDestination?.route) {
             CHATS_DESTINATION -> TopLevelDestination.CHATS
+            PROFILE_DESTINATION -> TopLevelDestination.PROFILE
             else -> null
         }
 
@@ -66,8 +69,7 @@ class ChatAppState(
             TopLevelDestination.SEARCH -> {
             }
 
-            TopLevelDestination.PROFILE -> {
-            }
+            TopLevelDestination.PROFILE -> navController.navigateToProfile()
         }
     }
 }

@@ -2,31 +2,24 @@ package com.example.chatapp.ui
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.data.repository.ChatSocketRepository
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.SocketResult
 import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.model.Message
-import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatSocketViewModel @Inject constructor(
-    private val savedStateHandle: SavedStateHandle,
-    private val authRepository: AuthRepository,
     private val messageRepository: MessageRepository,
     private val userRepository: UserRepository,
     private val chatSocketRepository: ChatSocketRepository,
@@ -41,30 +34,26 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationsListState = mutableStateOf(ConversationsListState())
     val conversationsListState: State<ConversationsListState> = _conversationsListState
 
-    private val logoutChannel = Channel<Unit>()
-    val logoutResult = logoutChannel.receiveAsFlow()
 
-    init {
+    fun init(receiverId: String) {
         viewModelScope.launch {
             _conversationsListState.value = _conversationsListState.value.copy(
                 isLoading = true
             )
 
-            savedStateHandle.get<String>("receiverId")?.let { receiverId ->
+            _conversationState.value =
+                _conversationState.value.copy(isLoading = true)
+
+            userRepository.getUserFlowBy(receiverId).collectLatest {
                 _conversationState.value =
-                    _conversationState.value.copy(isLoading = true)
+                    _conversationState.value.copy(receiver = it)
+            }
 
-                userRepository.getUserFlowBy(receiverId).collectLatest {
-                    _conversationState.value =
-                        _conversationState.value.copy(receiver = it)
-                }
-
-                messageRepository.getMessages2(receiverId).collect {
-                    _conversationState.value = _conversationState.value.copy(
-                        messages = it,
-                        isLoading = false
-                    )
-                }
+            messageRepository.getMessages2(receiverId).collect {
+                _conversationState.value = _conversationState.value.copy(
+                    messages = it,
+                    isLoading = false
+                )
             }
         }
     }
@@ -75,7 +64,6 @@ class ChatSocketViewModel @Inject constructor(
                 .onEach {
                     when (it) {
                         is SocketResult.Open -> {
-                            getConversations()
                         }
 
                         is SocketResult.NewMessage -> {
@@ -106,7 +94,7 @@ class ChatSocketViewModel @Inject constructor(
         _messageTextState.value = message
     }
 
-    private fun getConversations() {
+    fun getConversations() {
         viewModelScope.launch {
             chatSocketRepository.getConversationsList()
         }
@@ -136,13 +124,6 @@ class ChatSocketViewModel @Inject constructor(
     fun closeConnection() {
         viewModelScope.launch {
             chatSocketRepository.closeSession()
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.logout()
-            logoutChannel.send(Unit)
         }
     }
 

@@ -28,7 +28,8 @@ fun ChatApp(
 ) {
     Scaffold(
         bottomBar = {
-            if (appState.currentTopLevelDestination == TopLevelDestination.CHATS) {
+            val topLevelDestinations = TopLevelDestination.values()
+            if (topLevelDestinations.contains(appState.currentTopLevelDestination)) {
                 ChatNavigationBar(
                     destinations = appState.topLevelDestinations,
                     currentDestination = appState.currentDestination,

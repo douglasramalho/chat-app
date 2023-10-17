@@ -41,6 +41,7 @@ fun ChatNavigationBar(
                     modifier = Modifier.padding(top = 6.dp),
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
                     elevation = FloatingActionButtonDefaults.elevation(
                         defaultElevation = 0.dp,
                         pressedElevation = 0.dp,

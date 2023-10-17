@@ -18,4 +18,6 @@ interface LocalDataSource {
     suspend fun saveUsersList(users: List<User>)
 
     suspend fun saveUser(user: User)
+
+    suspend fun clear()
 }

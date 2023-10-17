@@ -21,47 +21,13 @@ fun NavController.navigateToChats(navOptions: NavOptions? = null) {
 fun NavGraphBuilder.chatsNavGraph(
     navController: NavHostController
 ) {
-
     navigation(
         route = CHATS_ROUTE,
         startDestination = CHATS_DESTINATION
     ) {
 
-        composable(
-            CHATS_DESTINATION,
-            enterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
-                    animationSpec = tween(200)
-                )
-            },
-            exitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(200)
-                )
-            },
-            popEnterTransition = {
-                slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(200)
-                )
-            },
-            popExitTransition = {
-                slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(200)
-                )
-            }
-        ) {
+        composable(CHATS_DESTINATION) {
             ConversationsListRoute(
-                navigateWhenLogout = {
-                    navController.navigate("signIn") {
-                        popUpTo(CHATS_DESTINATION) {
-                            inclusive = true
-                        }
-                    }
-                },
                 navigateWhenConversationItemClicked = { receiverId ->
                     navController.navigate("conversation/$receiverId")
                 }
@@ -71,30 +37,32 @@ fun NavGraphBuilder.chatsNavGraph(
             "conversation/{receiverId}",
             enterTransition = {
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(200)
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(150)
                 )
             },
             exitTransition = {
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-                    animationSpec = tween(200)
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(150)
                 )
             },
             popEnterTransition = {
                 slideIntoContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(200)
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(150)
                 )
             },
             popExitTransition = {
                 slideOutOfContainer(
-                    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-                    animationSpec = tween(200)
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(150)
                 )
             }
         ) {
-            ConversationRoute {
+            ConversationRoute(
+                receiverId = it.arguments?.getString("receiverId")
+            ) {
                 navController.popBackStack()
             }
         }

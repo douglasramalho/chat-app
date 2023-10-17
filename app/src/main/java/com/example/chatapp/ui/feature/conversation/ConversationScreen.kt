@@ -1,12 +1,9 @@
 package com.example.chatapp.ui.feature.conversation
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,10 +13,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,16 +30,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
+import com.example.chatapp.LocalActivity
 import com.example.chatapp.model.Message
 import com.example.chatapp.model.User
 import com.example.chatapp.ui.ChatSocketViewModel
+import com.example.chatapp.ui.component.ChatScaffold
+import com.example.chatapp.ui.component.ChatTopBar
 import com.example.chatapp.ui.component.MessageTextField
 import com.example.chatapp.ui.feature.conversation.component.ChatMessageItem
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ConversationRoute(
-    viewModel: ChatSocketViewModel = hiltViewModel(),
+    viewModel: ChatSocketViewModel = hiltViewModel(LocalActivity.current),
+    receiverId: String?,
     onNavigationClick: () -> Unit,
 ) {
 
@@ -54,9 +51,7 @@ fun ConversationRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                viewModel.connectChatSocket()
-            } else if (event == Lifecycle.Event.ON_STOP) {
-                viewModel.closeConnection()
+                viewModel.init(receiverId!!)
             }
         }
 
@@ -95,64 +90,41 @@ fun ConversationScreen(
     onMessageChanged: (message: String) -> Unit,
     onSendMessage: () -> Unit,
 ) {
-    Column(
-        Modifier.background(color = MaterialTheme.colorScheme.primary)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(
-                imageVector = Icons.Default.ArrowBack,
-                contentDescription = "Go back to previous screen",
-                modifier = Modifier.clickable {
-                    onNavigationClick()
-                },
-                tint = MaterialTheme.colorScheme.inverseOnSurface
-            )
+    ChatScaffold(
+        topBar = {
+            ChatTopBar(
+                customContent = {
+                    AsyncImage(
+                        model = receiver?.profilePictureUrl,
+                        contentDescription = null,
+                        modifier = Modifier
+                            .size(42.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
 
-            Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-            AsyncImage(
-                model = receiver?.profilePictureUrl,
-                contentDescription = null,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop
-            )
+                    Column {
+                        Text(
+                            text = receiver?.firstName ?: "",
+                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                            style = MaterialTheme.typography.titleMedium
+                        )
 
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = receiver?.firstName ?: "",
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    text = "Online",
-                    color = MaterialTheme.colorScheme.inverseOnSurface,
-                    style = MaterialTheme.typography.titleSmall
-                )
+                        Text(
+                            text = "Online",
+                            color = MaterialTheme.colorScheme.inverseOnSurface,
+                            style = MaterialTheme.typography.titleSmall
+                        )
+                    }
+                }
+            ) {
+                onNavigationClick()
             }
         }
-
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(
-                    color = MaterialTheme.colorScheme.surface,
-                    shape = MaterialTheme.shapes.extraLarge.copy(
-                        bottomStart = CornerSize(0.dp),
-                        bottomEnd = CornerSize(0.dp)
-                    )
-                ),
-            verticalArrangement = Arrangement.Bottom
-        ) {
+    ) {
+        Column {
             LazyColumn(
                 modifier = Modifier
                     .padding(bottom = 4.dp)

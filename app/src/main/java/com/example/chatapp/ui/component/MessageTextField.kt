@@ -24,6 +24,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ShapeDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
@@ -108,22 +109,20 @@ fun MessageTextField(
 
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    Box(
+                    Surface(
                         modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = CircleShape
-                            )
                             .size(33.dp)
                             .clickable {
                                 onSendClicked()
                             },
-                        contentAlignment = Alignment.Center,
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primary
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
-                            contentDescription = "Send",
-                            modifier = Modifier.padding(8.dp)
+                            contentDescription = "Send message",
+                            modifier = Modifier.padding(4.dp),
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
                     }
                 }

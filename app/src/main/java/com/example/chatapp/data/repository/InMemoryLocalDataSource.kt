@@ -12,7 +12,7 @@ import javax.inject.Inject
 class InMemoryLocalDataSource @Inject constructor() : LocalDataSource {
 
     private val conversationsListMutex = Mutex()
-    private var conversationsList: List<Conversation> = emptyList()
+    private var conversationsList: MutableList<Conversation> = mutableListOf()
     override var conversationsListFlow: Flow<List<Conversation>> = emptyFlow()
 
     private val usersListMutex = Mutex()
@@ -21,7 +21,7 @@ class InMemoryLocalDataSource @Inject constructor() : LocalDataSource {
 
     override suspend fun saveConversationsList(conversations: List<Conversation>) {
         conversationsListMutex.withLock {
-            conversationsList = conversations
+            conversationsList = conversations.toMutableList()
             conversationsListFlow = flowOf(conversations)
         }
     }
@@ -47,6 +47,16 @@ class InMemoryLocalDataSource @Inject constructor() : LocalDataSource {
         usersListMutex.withLock {
             usersList.add(user)
             usersListFlow = flowOf(usersList)
+        }
+    }
+
+    override suspend fun clear() {
+        usersListMutex.withLock {
+            usersList.clear()
+        }
+
+        conversationsListMutex.withLock {
+            conversationsList.clear()
         }
     }
 }
