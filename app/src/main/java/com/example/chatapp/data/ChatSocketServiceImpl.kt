@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.chatapp.data.remote.request.MessageRequest
 import com.example.chatapp.data.remote.response.ConversationResponse
 import com.example.chatapp.data.remote.response.MessageResponse
+import com.example.chatapp.data.remote.response.OnlineStatusResponse
 import com.example.chatapp.di.DefaultDispatcher
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.Types
@@ -25,8 +26,8 @@ sealed class SocketSessionResult {
     object SocketClosed : SocketSessionResult()
     data class SocketFailure(val throwable: Throwable) : SocketSessionResult()
     data class MessageReceived(val message: MessageResponse) : SocketSessionResult()
-    data class ConversationsList(val conversationsList: List<ConversationResponse>) :
-        SocketSessionResult()
+    data class ConversationsList(val conversationsList: List<ConversationResponse>) : SocketSessionResult()
+    data class OnlineStatus(val onlineStatusResponse: OnlineStatusResponse) : SocketSessionResult()
 }
 
 class ChatSocketServiceImpl @Inject constructor(
@@ -54,34 +55,51 @@ class ChatSocketServiceImpl @Inject constructor(
                         super.onMessage(webSocket, text)
                         if (text.isNotEmpty()) {
                             try {
-                                if (text.startsWith("conversationsList")) {
-                                    val json = text.substringAfter("#")
-                                    val moshi = Moshi
-                                        .Builder()
-                                        .add(KotlinJsonAdapterFactory())
-                                        .build()
+                                val action = text.substringBefore("#")
+                                val response = text.substringAfter("#")
+                                when (action) {
+                                    "newMessage" -> {
+                                        val moshi = Moshi
+                                            .Builder()
+                                            .add(KotlinJsonAdapterFactory())
+                                            .build()
 
-                                    val types = Types.newParameterizedType(
-                                        List::class.java,
-                                        ConversationResponse::class.java
-                                    )
-                                    val adapter = moshi.adapter<List<ConversationResponse>>(types)
+                                        val adapter = moshi.adapter(MessageResponse::class.java)
 
-                                    val conversationsResponse = adapter.fromJson(json)
-                                    conversationsResponse?.let {
-                                        trySend(SocketSessionResult.ConversationsList(it))
+                                        val messageResponse = adapter.fromJson(response)
+                                        messageResponse?.let {
+                                            trySend(SocketSessionResult.MessageReceived(it))
+                                        }
                                     }
-                                } else {
-                                    val moshi = Moshi
-                                        .Builder()
-                                        .add(KotlinJsonAdapterFactory())
-                                        .build()
+                                    "conversationsList" -> {
+                                        val moshi = Moshi
+                                            .Builder()
+                                            .add(KotlinJsonAdapterFactory())
+                                            .build()
 
-                                    val adapter = moshi.adapter(MessageResponse::class.java)
+                                        val types = Types.newParameterizedType(
+                                            List::class.java,
+                                            ConversationResponse::class.java
+                                        )
+                                        val adapter = moshi.adapter<List<ConversationResponse>>(types)
 
-                                    val messageResponse = adapter.fromJson(text)
-                                    messageResponse?.let {
-                                        trySend(SocketSessionResult.MessageReceived(it))
+                                        val conversationsResponse = adapter.fromJson(response)
+                                        conversationsResponse?.let {
+                                            trySend(SocketSessionResult.ConversationsList(it))
+                                        }
+                                    }
+                                    "onlineUserIds" -> {
+                                        val moshi = Moshi
+                                            .Builder()
+                                            .add(KotlinJsonAdapterFactory())
+                                            .build()
+
+                                        val adapter = moshi.adapter(OnlineStatusResponse::class.java)
+
+                                        val onlineStatusResponse = adapter.fromJson(response)
+                                        onlineStatusResponse?.let {
+                                            trySend(SocketSessionResult.OnlineStatus(it))
+                                        }
                                     }
                                 }
                             } catch (e: Exception) {
@@ -113,6 +131,10 @@ class ChatSocketServiceImpl @Inject constructor(
 
     override suspend fun sendGetConversationsList(userId: String) {
         webSocket?.send("getConversations#$userId")
+    }
+
+    override suspend fun sendGetOnlineStatus() {
+        webSocket?.send("getOnlineStatus")
     }
 
     override suspend fun sendMessage(

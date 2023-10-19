@@ -10,6 +10,8 @@ interface ChatSocketService {
 
     suspend fun sendGetConversationsList(userId: String)
 
+    suspend fun sendGetOnlineStatus()
+
     suspend fun sendMessage(
         receiverId: String,
         message: String

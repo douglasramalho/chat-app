@@ -11,10 +11,7 @@ import com.example.chatapp.model.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -22,6 +19,7 @@ sealed interface SocketResult {
     object Open : SocketResult
     data class NewMessage(val message: Message) : SocketResult
     data class Conversations(val conversations: List<Conversation>) : SocketResult
+    data class OnlineStatus(val onlineUserIds: List<Int>) : SocketResult
 }
 
 class ChatSocketRepositoryImpl @Inject constructor(
@@ -57,6 +55,10 @@ class ChatSocketRepositoryImpl @Inject constructor(
                         SocketResult.Conversations(localDataSource.getConversationsList())
                     }
 
+                    is SocketSessionResult.OnlineStatus -> {
+                        SocketResult.OnlineStatus(it.onlineStatusResponse.onlineUserIds)
+                    }
+
                     else -> null
                 }
             }
@@ -71,6 +73,10 @@ class ChatSocketRepositoryImpl @Inject constructor(
         val accessToken = sharedPreferences.getString("accessToken", null)
         val userId = accessToken.getUserIdFromToken()
         chatSocketService.sendGetConversationsList(userId)
+    }
+
+    override suspend fun getOnlineStatus() {
+        chatSocketService.sendGetOnlineStatus()
     }
 
     override suspend fun sendMessage(

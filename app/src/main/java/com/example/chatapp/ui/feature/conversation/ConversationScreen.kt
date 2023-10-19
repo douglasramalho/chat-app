@@ -72,8 +72,7 @@ fun ConversationRoute(
     }
 
     ConversationScreen(
-        receiver,
-        messages,
+        state,
         messageText,
         onNavigationClick,
         viewModel::onMessageChange,
@@ -83,13 +82,15 @@ fun ConversationRoute(
 
 @Composable
 fun ConversationScreen(
-    receiver: User?,
-    messages: List<Message>,
+    conversationState: ConversationState,
     messageText: String,
     onNavigationClick: () -> Unit,
     onMessageChanged: (message: String) -> Unit,
     onSendMessage: () -> Unit,
 ) {
+    val receiver = conversationState.receiver
+    val messages = conversationState.messages
+
     ChatScaffold(
         topBar = {
             ChatTopBar(
@@ -112,11 +113,13 @@ fun ConversationScreen(
                             style = MaterialTheme.typography.titleMedium
                         )
 
-                        Text(
-                            text = "Online",
-                            color = MaterialTheme.colorScheme.inverseOnSurface,
-                            style = MaterialTheme.typography.titleSmall
-                        )
+                        if (conversationState.isOnline) {
+                            Text(
+                                text = "Online",
+                                color = MaterialTheme.colorScheme.inverseOnSurface,
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                        }
                     }
                 }
             ) {
@@ -207,50 +210,53 @@ fun ConversationScreen(
 fun PreviewConversationScreen() {
     ChatAppTheme {
         ConversationScreen(
-            receiver = User(
-                id = "1",
-                username = "tibeca@gmail.com",
-                "Douglas",
-                "Motta",
-                null
-            ),
-            messages = listOf(
-                Message(
+            ConversationState(
+                receiver = User(
                     id = "1",
-                    senderId = "1",
-                    receiverId = "2",
-                    text = "I'm doing well",
-                    formattedTime = "15:00",
-                    isUnread = false,
-                    isOwnMessage = true
+                    username = "tibeca@gmail.com",
+                    "Douglas",
+                    "Motta",
+                    null
                 ),
-                Message(
-                    id = "1",
-                    senderId = "1",
-                    receiverId = "2",
-                    text = "Hello Raissa",
-                    formattedTime = "Today",
-                    isUnread = false,
-                    isOwnMessage = true
-                ),
-                Message(
-                    id = "1",
-                    senderId = "1",
-                    receiverId = "2",
-                    text = "Hello Douglas",
-                    formattedTime = "Today",
-                    isUnread = false,
-                    isOwnMessage = false
-                ),
-                Message(
-                    id = "1",
-                    senderId = "1",
-                    receiverId = "2",
-                    text = "How are you doing?",
-                    formattedTime = "Today",
-                    isUnread = false,
-                    isOwnMessage = true
-                ),
+                messages = listOf(
+                    Message(
+                        id = "1",
+                        senderId = "1",
+                        receiverId = "2",
+                        text = "I'm doing well",
+                        formattedTime = "15:00",
+                        isUnread = false,
+                        isOwnMessage = true
+                    ),
+                    Message(
+                        id = "1",
+                        senderId = "1",
+                        receiverId = "2",
+                        text = "Hello Raissa",
+                        formattedTime = "Today",
+                        isUnread = false,
+                        isOwnMessage = true
+                    ),
+                    Message(
+                        id = "1",
+                        senderId = "1",
+                        receiverId = "2",
+                        text = "Hello Douglas",
+                        formattedTime = "Today",
+                        isUnread = false,
+                        isOwnMessage = false
+                    ),
+                    Message(
+                        id = "1",
+                        senderId = "1",
+                        receiverId = "2",
+                        text = "How are you doing?",
+                        formattedTime = "Today",
+                        isUnread = false,
+                        isOwnMessage = true
+                    ),
+                ) ,
+                isOnline = true
             ),
             messageText = "",
             onNavigationClick = {},

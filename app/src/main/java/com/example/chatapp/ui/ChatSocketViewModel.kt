@@ -12,6 +12,7 @@ import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -36,6 +37,8 @@ class ChatSocketViewModel @Inject constructor(
 
 
     fun init(receiverId: String) {
+        getOnlineStatus()
+
         viewModelScope.launch {
             _conversationsListState.value = _conversationsListState.value.copy(
                 isLoading = true
@@ -83,6 +86,16 @@ class ChatSocketViewModel @Inject constructor(
                             )
                         }
 
+                        is SocketResult.OnlineStatus -> {
+                            _conversationState.value.receiver?.let { receiver ->
+                                _conversationState.value = _conversationState.value.copy(
+                                    isOnline = it.onlineUserIds.contains(
+                                        receiver.id.toInt()
+                                    )
+                                )
+                            }
+                        }
+
                         else -> {
                         }
                     }
@@ -97,6 +110,13 @@ class ChatSocketViewModel @Inject constructor(
     fun getConversations() {
         viewModelScope.launch {
             chatSocketRepository.getConversationsList()
+        }
+    }
+
+    private fun getOnlineStatus() {
+        viewModelScope.launch {
+            delay(1_000)
+            chatSocketRepository.getOnlineStatus()
         }
     }
 
