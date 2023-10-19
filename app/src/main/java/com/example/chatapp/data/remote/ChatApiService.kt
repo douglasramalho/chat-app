@@ -27,7 +27,7 @@ interface ChatApiService {
     @GET("authenticate")
     suspend fun authenticate(
         @Header("Authorization") token: String
-    )
+    ): UserResponse
 
     @GET("conversations/{userId}")
     suspend fun getConversations(@Path("userId") userId: String): List<ConversationResponse>

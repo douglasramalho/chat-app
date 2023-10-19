@@ -7,15 +7,29 @@ import androidx.navigation.navOptions
 import com.example.chatapp.ui.ChatAppState
 import com.example.chatapp.ui.feature.signin.SignInRoute
 import com.example.chatapp.ui.feature.signup.SignUpRoute
+import com.example.chatapp.ui.feature.splash.SplashRoute
 
 @Composable
 fun ChatNavHost(
     appState: ChatAppState,
-    startDestination: String = "signIn"
+    startDestination: String = "splash"
 ) {
     val navController = appState.navController
 
     NavHost(navController = appState.navController, startDestination = startDestination) {
+        composable("splash") {
+            SplashRoute { isLoggedIn ->
+                val navOptions = navOptions {
+                    popUpTo("splash") {
+                        inclusive = true
+                    }
+                }
+
+                if (isLoggedIn) {
+                    navController.navigateToChats(navOptions)
+                } else navController.navigate("signIn")
+            }
+        }
         composable("signIn") {
             SignInRoute(
                 navigateWhenAuthorized = {

@@ -6,7 +6,9 @@ import com.example.chatapp.data.extension.errorMapping
 import com.example.chatapp.data.remote.ChatApiService
 import com.example.chatapp.data.remote.request.AuthRequest
 import com.example.chatapp.data.remote.request.CreateAccountRequest
+import com.example.chatapp.data.remote.response.toModel
 import com.example.chatapp.model.AppError
+import com.example.chatapp.model.User
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -61,14 +63,16 @@ class AuthRepositoryImpl @Inject constructor(
         emit(Result.Error(it.errorMapping()))
     }
 
-    override suspend fun authenticate(): Result<Unit> {
+    override suspend fun authenticate(): Result<User> {
         val accessToken =
             prefs.getString("accessToken", null)
                 ?: return Result.Error(AppError.ApiError.Unauthorized)
 
         return try {
-            apiService.authenticate("Bearer $accessToken")
-            Result.Success(Unit)
+            val userResponse = apiService.authenticate("Bearer $accessToken")
+            val user = userResponse.toModel()
+
+            Result.Success(user)
         } catch (e: HttpException) {
             Result.Error(e.errorMapping())
         }

@@ -38,6 +38,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatapp.R
 import com.example.chatapp.ui.component.ChatPrimaryButton
 import com.example.chatapp.ui.component.PrimaryChatTextField
+import com.example.chatapp.ui.theme.BackgroundGradient
 import com.example.chatapp.ui.theme.ChatAppTheme
 import kotlinx.coroutines.flow.collectLatest
 
@@ -122,20 +123,12 @@ private fun SignInScreen(
         modifier = modifier
             .fillMaxSize()
             .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        MaterialTheme.colorScheme.primary,
-                        Color(0xFF1E1E1E),
-                        Color.Black,
-                    ),
-                )
+                brush = BackgroundGradient
             )
             .padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val context = LocalContext.current
-
         Image(
             painter = painterResource(id = R.drawable.logo),
             contentDescription = null
