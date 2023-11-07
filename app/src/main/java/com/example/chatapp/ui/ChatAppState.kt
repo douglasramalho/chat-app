@@ -9,6 +9,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
+import com.example.chatapp.model.User
 import com.example.chatapp.navigation.CHATS_DESTINATION
 import com.example.chatapp.navigation.PROFILE_DESTINATION
 import com.example.chatapp.navigation.TopLevelDestination
@@ -18,16 +19,18 @@ import com.example.chatapp.navigation.navigateToUsers
 
 @Composable
 fun rememberChatAppState(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    user: User? = null,
 ): ChatAppState {
-    return remember(navController) {
-        ChatAppState(navController)
+    return remember(navController, user) {
+        ChatAppState(navController, user)
     }
 }
 
 @Stable
 class ChatAppState(
-    val navController: NavHostController
+    val navController: NavHostController,
+    val user: User?,
 ) {
     val currentDestination: NavDestination?
         @Composable get() = navController

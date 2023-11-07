@@ -13,9 +13,11 @@ import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -34,6 +36,13 @@ class ChatSocketViewModel @Inject constructor(
 
     private val _conversationsListState = mutableStateOf(ConversationsListState())
     val conversationsListState: State<ConversationsListState> = _conversationsListState
+
+    val currentUserStateFlow = userRepository.currentUser
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
 
     fun init(receiverId: String) {

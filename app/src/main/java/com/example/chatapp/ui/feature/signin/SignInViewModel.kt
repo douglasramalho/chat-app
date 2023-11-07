@@ -34,10 +34,6 @@ class SignInViewModel @Inject constructor(
     private val _navigateWhenSigningSuccessfully = Channel<Unit>()
     val navigateWhenSigningSuccessfully = _navigateWhenSigningSuccessfully.receiveAsFlow()
 
-    init {
-        authenticate()
-    }
-
     fun onEvent(event: SignInUiEvent) {
         when (event) {
             is SignInUiEvent.UsernameChanged -> {

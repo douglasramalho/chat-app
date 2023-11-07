@@ -19,9 +19,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatapp.LocalActivity
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
+import com.example.chatapp.model.User
 import com.example.chatapp.model.getReceiverMember
 import com.example.chatapp.ui.ChatSocketViewModel
 import com.example.chatapp.ui.component.ChatScaffold
@@ -51,9 +53,11 @@ fun ConversationsListRoute(
         }
     }
 
+    val currentUser by viewModel.currentUserStateFlow.collectAsStateWithLifecycle()
     val state by viewModel.conversationsListState
 
     ConversationsListScreen(
+        currentUser = currentUser,
         conversationsList = state.conversationsList,
         onConversationItemClicked = { receiverId ->
             navigateWhenConversationItemClicked(receiverId)
@@ -63,13 +67,14 @@ fun ConversationsListRoute(
 
 @Composable
 private fun ConversationsListScreen(
+    currentUser: User?,
     conversationsList: List<Conversation>,
     onConversationItemClicked: (receiverId: String) -> Unit
 ) {
     ChatScaffold(
         topBar = {
             ChatTopBar(
-                title = "Welcome back, Douglas"
+                title = "Welcome back, ${currentUser?.firstName}"
             )
         }
     ) {
@@ -102,6 +107,7 @@ fun PreviewConversationsListScreen() {
     ChatAppTheme {
         Surface {
             ConversationsListScreen(
+                currentUser = null,
                 conversationsList = listOf(
                     Conversation(
                         id = "1",

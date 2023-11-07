@@ -4,6 +4,7 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id "kotlin-kapt"
     id 'com.google.gms.google-services'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -80,7 +81,13 @@ dependencies {
 
     implementation 'io.coil-kt:coil-compose:2.4.0'
 
-    implementation 'com.google.firebase:firebase-storage-ktx:20.2.1'
+    implementation 'com.google.firebase:firebase-storage-ktx:20.3.0'
+
+    implementation 'androidx.core:core-splashscreen:1.0.1'
+
+    implementation "androidx.datastore:datastore:1.0.0"
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.1'
 
     testImplementation 'junit:junit:4.13.2'
 
