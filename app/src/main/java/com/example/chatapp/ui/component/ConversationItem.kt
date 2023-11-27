@@ -35,7 +35,7 @@ fun ConversationItem(
     onItemClicked: () -> Unit
 ) {
     val profilePicture = conversation.getReceiverMember().profilePictureUrl
-        ?: R.drawable.ic_upload_photo
+        ?: R.drawable.no_profile_image
 
     Surface(
         modifier = Modifier

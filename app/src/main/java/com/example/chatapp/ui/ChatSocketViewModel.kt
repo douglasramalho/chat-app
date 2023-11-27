@@ -14,6 +14,7 @@ import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -61,12 +62,16 @@ class ChatSocketViewModel @Inject constructor(
                     _conversationState.value.copy(receiver = it)
             }
 
-            messageRepository.getMessages2(receiverId).collect {
-                _conversationState.value = _conversationState.value.copy(
-                    messages = it,
-                    isLoading = false
-                )
-            }
+            messageRepository.getMessages(receiverId)
+                .catch {
+
+                }
+                .collect {
+                    _conversationState.value = _conversationState.value.copy(
+                        messages = it,
+                        isLoading = false
+                    )
+                }
         }
     }
 

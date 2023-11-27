@@ -38,8 +38,9 @@ class ChatSocketServiceImpl @Inject constructor(
     private var webSocket: WebSocket? = null
 
     override suspend fun initSession(userId: String): Flow<SocketSessionResult> {
+        // Prod: "ws://chat-api.douglasmotta.com.br:8080/chat/$userId"
         val request = Request.Builder()
-            .url("ws://chat-api.douglasmotta.com.br:8080/chat/$userId")
+            .url("ws://192.168.1.68:8080/chat/$userId")
             .build()
 
         return callbackFlow {

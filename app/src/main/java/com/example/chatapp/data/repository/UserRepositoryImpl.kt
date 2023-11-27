@@ -38,7 +38,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun saveCurrentUser(user: User) {
         context.currentUserDataStore.updateData {
-            it?.copy(
+            it.copy(
                 id = user.id,
                 firstName = user.firstName,
                 lastName = user.lastName,

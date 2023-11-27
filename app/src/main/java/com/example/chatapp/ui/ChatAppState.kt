@@ -50,7 +50,7 @@ class ChatAppState(
             // Pop up to the start destination of the graph to
             // avoid building up a large stack of destinations
             // on the back stack as users select items
-            popUpTo(navController.graph.findStartDestination().id) {
+            popUpTo("chats") {
                 saveState = true
             }
             // Avoid multiple copies of the same destination when
@@ -72,7 +72,7 @@ class ChatAppState(
             TopLevelDestination.SEARCH -> {
             }
 
-            TopLevelDestination.PROFILE -> navController.navigateToProfile()
+            TopLevelDestination.PROFILE -> navController.navigateToProfile(topLevelNavOptions)
         }
     }
 }

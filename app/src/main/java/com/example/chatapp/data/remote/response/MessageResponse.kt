@@ -6,6 +6,13 @@ import java.text.DateFormat
 import java.util.Date
 
 @JsonClass(generateAdapter = true)
+data class PaginatedMessageResponse(
+    val messages: List<MessageResponse>,
+    val total: Int,
+    val hasMore: Boolean,
+)
+
+@JsonClass(generateAdapter = true)
 data class MessageResponse(
     val id: String,
     val senderId: String,

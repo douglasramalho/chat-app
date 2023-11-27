@@ -14,12 +14,8 @@ class RemoteDataSourceImpl @Inject constructor(
         return apiService.getConversations(userId)
     }
 
-    override suspend fun getMessages(conversationId: String): List<MessageResponse> {
-        return apiService.getMessages(conversationId)
-    }
-
-    override suspend fun getMessages(senderId: String, receiverId: String): List<MessageResponse> {
-        return apiService.getMessages2(senderId, receiverId)
+    override suspend fun getMessages(token: String, receiverId: String): List<MessageResponse> {
+        return apiService.getMessages("Bearer $token", receiverId).messages
     }
 
     override suspend fun getUsers(token: String): List<UserResponse> {

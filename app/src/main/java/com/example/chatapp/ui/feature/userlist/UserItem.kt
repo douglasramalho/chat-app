@@ -37,7 +37,7 @@ fun UserItem(
             }
     ) {
         val profilePicture = user.profilePictureUrl
-            ?: R.drawable.ic_upload_photo
+            ?: R.drawable.no_profile_image
 
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(

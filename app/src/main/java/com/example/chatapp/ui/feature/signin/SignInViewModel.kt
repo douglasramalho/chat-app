@@ -87,15 +87,6 @@ class SignInViewModel @Inject constructor(
         }
     }
 
-    private fun authenticate() {
-        viewModelScope.launch {
-            val result = authRepository.authenticate()
-            if (result is Result.Success) {
-                _navigateWhenSigningSuccessfully.send(Unit)
-            }
-        }
-    }
-
     fun resetSignInResultUiState() {
         _signInResultUiState.value = SignInResultUiState.Success
     }
