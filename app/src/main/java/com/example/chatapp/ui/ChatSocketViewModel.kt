@@ -7,25 +7,20 @@ import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.ChatSocketRepository
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.SocketResult
-import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ChatSocketViewModel @Inject constructor(
     private val messageRepository: MessageRepository,
-    private val userRepository: UserRepository,
     private val chatSocketRepository: ChatSocketRepository,
 ) : ViewModel() {
 
@@ -38,13 +33,9 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationsListState = mutableStateOf(ConversationsListState())
     val conversationsListState: State<ConversationsListState> = _conversationsListState
 
-    val currentUserStateFlow = userRepository.currentUser
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = null
-        )
-
+    init {
+        connectChatSocket()
+    }
 
     fun init(receiverId: String) {
         getOnlineStatus()
@@ -56,11 +47,6 @@ class ChatSocketViewModel @Inject constructor(
 
             _conversationState.value =
                 _conversationState.value.copy(isLoading = true)
-
-            userRepository.getUserFlowBy(receiverId).collectLatest {
-                _conversationState.value =
-                    _conversationState.value.copy(receiver = it)
-            }
 
             messageRepository.getMessages(receiverId)
                 .catch {
@@ -75,7 +61,7 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    fun connectChatSocket() {
+    private fun connectChatSocket() {
         viewModelScope.launch {
             chatSocketRepository.openSession()
                 .onEach {
@@ -142,12 +128,12 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    fun sendMessage() {
+    fun sendMessage(receiverId: String) {
         viewModelScope.launch {
             val text = messageTextState.value.trim()
             if (text.isNotEmpty()) {
                 chatSocketRepository.sendMessage(
-                    receiverId = _conversationState.value.receiver?.id ?: "",
+                    receiverId = receiverId,
                     message = text
                 )
                 _messageTextState.value = ""

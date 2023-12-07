@@ -26,11 +26,9 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
-import com.example.chatapp.LocalActivity
 import com.example.chatapp.model.Message
 import com.example.chatapp.model.User
 import com.example.chatapp.ui.ChatSocketViewModel
@@ -42,7 +40,7 @@ import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ConversationRoute(
-    viewModel: ChatSocketViewModel = hiltViewModel(LocalActivity.current),
+    chatSocketViewModel: ChatSocketViewModel,
     receiverId: String?,
     onNavigationClick: () -> Unit,
 ) {
@@ -51,7 +49,7 @@ fun ConversationRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                viewModel.init(receiverId!!)
+                chatSocketViewModel.init(receiverId!!)
             }
         }
 
@@ -62,21 +60,21 @@ fun ConversationRoute(
         }
     }
 
-    val state by viewModel.conversationState
-    val messageText by viewModel.messageTextState
+    val state by chatSocketViewModel.conversationState
+    val messageText by chatSocketViewModel.messageTextState
 
     val receiver = state.receiver
     val messages = state.messages
     messages.forEach {
-        viewModel.readMessage(it)
+        chatSocketViewModel.readMessage(it)
     }
 
     ConversationScreen(
         state,
         messageText,
         onNavigationClick,
-        viewModel::onMessageChange,
-        viewModel::sendMessage
+        chatSocketViewModel::onMessageChange,
+        onSendMessage = { chatSocketViewModel.sendMessage(receiverId!!) }
     )
 }
 
@@ -220,42 +218,42 @@ fun PreviewConversationScreen() {
                 ),
                 messages = listOf(
                     Message(
-                        id = "1",
-                        senderId = "1",
-                        receiverId = "2",
+                        id = 1,
+                        senderId = 1,
+                        receiverId = 2,
                         text = "I'm doing well",
                         formattedTime = "15:00",
                         isUnread = false,
                         isOwnMessage = true
                     ),
                     Message(
-                        id = "1",
-                        senderId = "1",
-                        receiverId = "2",
+                        id = 1,
+                        senderId = 1,
+                        receiverId = 2,
                         text = "Hello Raissa",
                         formattedTime = "Today",
                         isUnread = false,
                         isOwnMessage = true
                     ),
                     Message(
-                        id = "1",
-                        senderId = "1",
-                        receiverId = "2",
+                        id = 1,
+                        senderId = 1,
+                        receiverId = 2,
                         text = "Hello Douglas",
                         formattedTime = "Today",
                         isUnread = false,
                         isOwnMessage = false
                     ),
                     Message(
-                        id = "1",
-                        senderId = "1",
-                        receiverId = "2",
+                        id = 1,
+                        senderId = 1,
+                        receiverId = 2,
                         text = "How are you doing?",
                         formattedTime = "Today",
                         isUnread = false,
                         isOwnMessage = true
                     ),
-                ) ,
+                ),
                 isOnline = true
             ),
             messageText = "",

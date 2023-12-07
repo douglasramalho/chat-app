@@ -48,9 +48,9 @@ fun PreviewChatMessage() {
     ChatAppTheme {
         ChatMessageItem(
             message = Message(
-                id = "1",
-                senderId = "1",
-                receiverId = "2",
+                id = 1,
+                senderId = 1,
+                receiverId = 2,
                 text = "Olá",
                 formattedTime = "21:00",
                 isUnread = true,

@@ -2,7 +2,7 @@ package com.example.chatapp.data.remote
 
 import com.example.chatapp.data.remote.request.AuthRequest
 import com.example.chatapp.data.remote.request.CreateAccountRequest
-import com.example.chatapp.data.remote.response.ConversationResponse
+import com.example.chatapp.data.remote.response.PaginatedConversationResponse
 import com.example.chatapp.data.remote.response.PaginatedMessageResponse
 import com.example.chatapp.data.remote.response.TokenResponse
 import com.example.chatapp.data.remote.response.UserResponse
@@ -30,14 +30,19 @@ interface ChatApiService {
         @Header("Authorization") token: String
     ): UserResponse
 
-    @GET("conversations/{userId}")
-    suspend fun getConversations(@Path("userId") userId: String): List<ConversationResponse>
+    @GET("conversations")
+    suspend fun getConversations(
+        @Header("Authorization") token: String,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 10,
+    ): PaginatedConversationResponse
 
     @GET("messages/{receiverId}")
     suspend fun getMessages(
         @Header("Authorization") token: String,
         @Path("receiverId") receiverId: String,
-        @Query("limit") limit: Int = 20,
+        @Query("offset") offset: Int = 0,
+        @Query("limit") limit: Int = 10,
     ): PaginatedMessageResponse
 
     @GET("users")

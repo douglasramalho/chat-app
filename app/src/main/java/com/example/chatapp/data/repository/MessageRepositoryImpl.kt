@@ -3,6 +3,7 @@ package com.example.chatapp.data.repository
 import android.content.SharedPreferences
 import com.example.chatapp.data.RemoteDataSource
 import com.example.chatapp.data.remote.response.toMessage
+import com.example.chatapp.data.repository.extension.getUserIdFromToken
 import com.example.chatapp.model.AppError
 import com.example.chatapp.model.Message
 import kotlinx.coroutines.flow.Flow
@@ -18,11 +19,14 @@ class MessageRepositoryImpl @Inject constructor(
         val accessToken = sharedPreferences.getString("accessToken", null)
             ?: throw Exception(AppError.ApiError.Unauthorized)
 
+        val userId = accessToken.getUserIdFromToken()
+
         return try {
             flowOf(
                 remoteDataSource.getMessages(accessToken, receiverId)
+                    .messages
                     .map {
-                        it.toMessage(it.senderId)
+                        it.toMessage(userId)
                     }
             )
         } catch (e: Throwable) {

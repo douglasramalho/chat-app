@@ -1,24 +1,27 @@
 package com.example.chatapp.data
 
-import android.util.Log
+import com.example.chatapp.data.remote.di.SocketHttpClient
 import com.example.chatapp.data.remote.request.MessageRequest
 import com.example.chatapp.data.remote.response.ConversationResponse
 import com.example.chatapp.data.remote.response.MessageResponse
 import com.example.chatapp.data.remote.response.OnlineStatusResponse
-import com.example.chatapp.di.DefaultDispatcher
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.channels.awaitClose
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.websocket.webSocketSession
+import io.ktor.websocket.Frame
+import io.ktor.websocket.WebSocketSession
+import io.ktor.websocket.close
+import io.ktor.websocket.readText
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.flowOn
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.Response
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.isActive
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.WebSocket
-import okhttp3.WebSocketListener
 import javax.inject.Inject
 
 sealed class SocketSessionResult {
@@ -31,19 +34,30 @@ sealed class SocketSessionResult {
 }
 
 class ChatSocketServiceImpl @Inject constructor(
-    private val okHttpClient: OkHttpClient,
-    @DefaultDispatcher private val dispatcher: CoroutineDispatcher
+    @SocketHttpClient
+    private val client: HttpClient,
 ) : ChatSocketService {
 
     private var webSocket: WebSocket? = null
+    private var socket: WebSocketSession? = null
 
-    override suspend fun initSession(userId: String): Flow<SocketSessionResult> {
+    override suspend fun initSession(userId: String): Result<Unit> {
+        return try {
+            socket = client.webSocketSession("ws://192.168.1.68:8080/chat/$userId")
+
+            if (socket?.isActive == true) {
+                Result.success(Unit)
+            } else Result.failure(Throwable("Couldn't establish a connection."))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+
         // Prod: "ws://chat-api.douglasmotta.com.br:8080/chat/$userId"
-        val request = Request.Builder()
+        /*val request = Request.Builder()
             .url("ws://192.168.1.68:8080/chat/$userId")
             .build()
 
-        return callbackFlow {
+        callbackFlow {
             webSocket = okHttpClient.newWebSocket(
                 request = request,
                 listener = object : WebSocketListener() {
@@ -112,6 +126,7 @@ class ChatSocketServiceImpl @Inject constructor(
 
                     override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
                         super.onClosed(webSocket, code, reason)
+                        Log.d("ChatSocketServiceImpl", "onMessage: $reason")
                         trySend(SocketSessionResult.SocketClosed)
                     }
 
@@ -121,45 +136,65 @@ class ChatSocketServiceImpl @Inject constructor(
                         response: Response?
                     ) {
                         super.onFailure(webSocket, t, response)
+                        Log.d("ChatSocketServiceImpl", "onMessage: $t")
                         trySend(SocketSessionResult.SocketFailure(t))
                     }
                 }
             )
 
             awaitClose()
-        }.flowOn(dispatcher)
+        }.flowOn(dispatcher)*/
+    }
+
+    override fun observeNewMessages(): Flow<SocketSessionResult> {
+        return try {
+            socket?.incoming
+                ?.receiveAsFlow()
+                ?.filter { it is Frame.Text }
+                ?.map { frame ->
+                    val text = (frame as? Frame.Text)?.readText() ?: ""
+
+                    val action = text.substringBefore("#")
+                    val jsonResponse = text.substringAfter("#")
+
+                    when (action) {
+                        "newMessage" -> {
+                            val message = Json.decodeFromString<MessageResponse>(jsonResponse)
+                            SocketSessionResult.MessageReceived(message)
+                        } else -> SocketSessionResult.SocketOpen
+                    }
+                } ?: emptyFlow()
+        } catch (e: Exception) {
+            emptyFlow()
+        }
     }
 
     override suspend fun sendGetConversationsList(userId: String) {
         webSocket?.send("getConversations#$userId")
     }
 
-    override suspend fun sendGetOnlineStatus() {
-        webSocket?.send("getOnlineStatus")
+    override suspend fun sendGetActiveStatus() {
+        webSocket?.send("getActiveStatus")
     }
 
     override suspend fun sendMessage(
         receiverId: String,
         message: String
     ) {
-        val moshi = Moshi
-            .Builder()
-            .add(KotlinJsonAdapterFactory())
-            .build()
-        val adapter = moshi.adapter(MessageRequest::class.java)
         val messageRequest = MessageRequest(
             receiverId = receiverId,
             text = message
         )
-        val jsonText = adapter.toJson(messageRequest)
-        webSocket?.send("newMessage#$jsonText")
+
+        val jsonText = Json.encodeToString(messageRequest)
+        socket?.send(Frame.Text("newMessage#$jsonText"))
     }
 
-    override suspend fun sendReadMessage(messageId: String) {
+    override suspend fun sendReadMessage(messageId: Int) {
         webSocket?.send("markMessageAsRead#$messageId")
     }
 
     override suspend fun closeSession() {
-        webSocket?.close(1001, "Closed by app")
+        socket?.close()
     }
 }

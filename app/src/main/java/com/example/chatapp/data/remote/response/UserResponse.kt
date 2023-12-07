@@ -2,8 +2,9 @@ package com.example.chatapp.data.remote.response
 
 import com.example.chatapp.model.User
 import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class UserResponse(
     val id: String,
     val username: String,

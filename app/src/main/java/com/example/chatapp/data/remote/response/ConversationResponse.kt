@@ -2,12 +2,19 @@ package com.example.chatapp.data.remote.response
 
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@JsonClass(generateAdapter = true)
+@Serializable
+data class PaginatedConversationResponse(
+    val conversations: List<ConversationResponse>,
+    val total: Int,
+    val hasMore: Boolean,
+)
+
+@Serializable
 data class ConversationResponse(
     val id: String,
     val members: List<ConversationMemberResponse>,
@@ -16,7 +23,7 @@ data class ConversationResponse(
     val timestamp: Long,
 )
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ConversationMemberResponse(
     val id: String,
     val username: String,

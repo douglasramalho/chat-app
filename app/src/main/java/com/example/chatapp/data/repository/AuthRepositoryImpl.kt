@@ -1,8 +1,9 @@
 package com.example.chatapp.data.repository
 
 import android.content.SharedPreferences
+import com.example.chatapp.data.RemoteDataSource
 import com.example.chatapp.data.extension.errorMapping
-import com.example.chatapp.data.remote.ChatApiService
+import com.example.chatapp.data.remote.MyHttpException
 import com.example.chatapp.data.remote.request.AuthRequest
 import com.example.chatapp.data.remote.request.CreateAccountRequest
 import com.example.chatapp.data.remote.response.toModel
@@ -11,11 +12,10 @@ import com.example.chatapp.model.Result
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
-import retrofit2.HttpException
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val apiService: ChatApiService,
+    private val remoteDataSource: RemoteDataSource,
     private val prefs: SharedPreferences,
     private val userRepository: UserRepository,
     private val localDataSource: LocalDataSource,
@@ -29,7 +29,7 @@ class AuthRepositoryImpl @Inject constructor(
         profilePictureUrl: String?,
     ): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
-        apiService.signUp(
+        remoteDataSource.signUp(
             request = CreateAccountRequest(
                 username = username,
                 password = password,
@@ -47,7 +47,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun signIn(username: String, password: String): Flow<Result<Unit>> = flow {
         emit(Result.Loading)
-        val response = apiService.signIn(
+        val response = remoteDataSource.signIn(
             request = AuthRequest(
                 username = username,
                 password = password
@@ -66,23 +66,31 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun authenticate(): Result<Unit> {
-        val accessToken =
-            prefs.getString("accessToken", null)
-                ?: return Result.Error(AppError.ApiError.Unauthorized)
+        val accessToken = prefs.getString("accessToken", null)
 
-        return try {
-            val userResponse = apiService.authenticate("Bearer $accessToken")
-            val user = userResponse.toModel()
+        return if (accessToken == null) {
+            logout()
+            Result.Error(AppError.ApiError.Unauthorized)
+        } else {
+            try {
+                val userResponse = remoteDataSource.authenticate("Bearer $accessToken")
+                val user = userResponse.toModel()
 
-            userRepository.saveCurrentUser(user)
+                userRepository.saveCurrentUser(user)
 
-            Result.Success(Unit)
-        } catch (e: HttpException) {
-            Result.Error(e.errorMapping())
+                Result.Success(Unit)
+            } catch (e: MyHttpException) {
+                if (e.code == 401) {
+                    logout()
+                }
+
+                Result.Error(e.errorMapping())
+            }
         }
     }
 
     override suspend fun logout() {
+        userRepository.saveCurrentUser(null)
         localDataSource.clear()
 
         prefs.edit()

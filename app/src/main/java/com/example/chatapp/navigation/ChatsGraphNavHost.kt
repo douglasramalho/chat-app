@@ -2,12 +2,15 @@ package com.example.chatapp.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.remember
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
+import com.example.chatapp.ui.ChatSocketViewModel
 import com.example.chatapp.ui.feature.conversation.ConversationRoute
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListRoute
 
@@ -25,16 +28,21 @@ fun NavGraphBuilder.chatsNavGraph(
         route = CHATS_ROUTE,
         startDestination = CHATS_DESTINATION
     ) {
-
         composable(CHATS_DESTINATION) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(CHATS_ROUTE)
+            }
+
+            val chatSocketViewModel: ChatSocketViewModel = hiltViewModel(parentEntry)
+
             ConversationsListRoute(
+                chatSocketViewModel = chatSocketViewModel,
                 navigateWhenConversationItemClicked = { receiverId ->
                     navController.navigate("conversation/$receiverId")
                 }
             )
         }
-        composable(
-            "conversation/{receiverId}",
+        composable("conversation/{receiverId}",
             enterTransition = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Up,
@@ -60,7 +68,14 @@ fun NavGraphBuilder.chatsNavGraph(
                 )
             }
         ) {
+            val parentEntry = remember(it) {
+                navController.getBackStackEntry(CHATS_ROUTE)
+            }
+
+            val chatSocketViewModel: ChatSocketViewModel = hiltViewModel(parentEntry)
+
             ConversationRoute(
+                chatSocketViewModel = chatSocketViewModel,
                 receiverId = it.arguments?.getString("receiverId")
             ) {
                 navController.popBackStack()

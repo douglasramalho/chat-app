@@ -1,8 +1,8 @@
 package com.example.chatapp.data.remote.request
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class MessageRequest(
     val receiverId: String,
     val text: String,

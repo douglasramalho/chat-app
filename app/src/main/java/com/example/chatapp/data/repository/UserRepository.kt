@@ -9,7 +9,7 @@ interface UserRepository {
 
     val usersListFlow: Flow<List<User>>
 
-    suspend fun saveCurrentUser(user: User)
+    suspend fun saveCurrentUser(user: User?)
 
     suspend fun getAndStoreUsers()
 

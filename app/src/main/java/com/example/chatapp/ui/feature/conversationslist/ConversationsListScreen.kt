@@ -34,7 +34,8 @@ import com.example.chatapp.ui.theme.Grey1
 
 @Composable
 fun ConversationsListRoute(
-    viewModel: ChatSocketViewModel = hiltViewModel(LocalActivity.current),
+    viewModel: ConversationsListViewModel = hiltViewModel(),
+    chatSocketViewModel: ChatSocketViewModel,
     navigateWhenConversationItemClicked: (receiverId: String) -> Unit,
 ) {
 
@@ -42,7 +43,7 @@ fun ConversationsListRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                viewModel.getConversations()
+                viewModel.getConversationsList()
             }
         }
 
@@ -53,8 +54,8 @@ fun ConversationsListRoute(
         }
     }
 
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUserStateFlow.collectAsStateWithLifecycle()
-    val state by viewModel.conversationsListState
 
     ConversationsListScreen(
         currentUser = currentUser,

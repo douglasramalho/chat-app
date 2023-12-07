@@ -3,7 +3,7 @@ package com.example.chatapp.data.di
 import com.example.chatapp.data.ChatSocketService
 import com.example.chatapp.data.ChatSocketServiceImpl
 import com.example.chatapp.data.RemoteDataSource
-import com.example.chatapp.data.RemoteDataSourceImpl
+import com.example.chatapp.data.remote.RemoteDataSourceImpl
 import com.example.chatapp.data.repository.InMemoryLocalDataSource
 import com.example.chatapp.data.repository.LocalDataSource
 import dagger.Binds

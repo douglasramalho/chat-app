@@ -19,10 +19,10 @@ class ConversationRepositoryImpl @Inject constructor(
         return accessToken?.let { token ->
             val jwt = JWT(token)
             val currentUserId = jwt.claims["userId"]?.asString() ?: ""
-            val response = remoteDataSource.getConversations(currentUserId)
+            val response = remoteDataSource.getConversations(token)
 
             flowOf(
-                response.map {
+                response.conversations.map {
                     Conversation(
                         id = it.id,
                         members = it.members.map { member ->

@@ -3,7 +3,6 @@ package com.example.chatapp.data.repository
 import android.content.SharedPreferences
 import com.example.chatapp.data.ChatSocketService
 import com.example.chatapp.data.SocketSessionResult
-import com.example.chatapp.data.remote.response.toConversation
 import com.example.chatapp.data.remote.response.toMessage
 import com.example.chatapp.data.repository.extension.getUserIdFromToken
 import com.example.chatapp.model.Conversation
@@ -11,15 +10,18 @@ import com.example.chatapp.model.Message
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 sealed interface SocketResult {
-    object Open : SocketResult
+    data object  Open : SocketResult
     data class NewMessage(val message: Message) : SocketResult
     data class Conversations(val conversations: List<Conversation>) : SocketResult
     data class OnlineStatus(val onlineUserIds: List<Int>) : SocketResult
+    data object Error : SocketResult
 }
 
 class ChatSocketRepositoryImpl @Inject constructor(
@@ -33,10 +35,33 @@ class ChatSocketRepositoryImpl @Inject constructor(
     override val conversationsListFlow: Flow<List<Conversation>>
         get() = localDataSource.conversationsListFlow
 
+    override val messagesFlow: MutableStateFlow<Message?>
+        get() = MutableStateFlow(null)
+
     override suspend fun openSession(): Flow<SocketResult?> {
         val accessToken = sharedPreferences.getString("accessToken", null)
         val userId = accessToken.getUserIdFromToken()
-        return withContext(coroutineScope.coroutineContext) {
+
+        val socketResult = chatSocketService.initSession(userId)
+        return when {
+            socketResult.isSuccess -> {
+                chatSocketService.observeNewMessages()
+                    .map {
+                        when (it) {
+                            is SocketSessionResult.MessageReceived ->
+                                SocketResult.NewMessage(it.message.toMessage(userId))
+                            else -> SocketResult.Open
+                        }
+                    }
+            }
+            socketResult.isFailure -> {
+                flowOf(SocketResult.Error)
+            }
+
+            else -> emptyFlow()
+        }
+
+        /*return withContext(coroutineScope.coroutineContext) {
             chatSocketService.initSession(userId).map {
                 when (it) {
                     is SocketSessionResult.SocketOpen -> SocketResult.Open
@@ -62,7 +87,7 @@ class ChatSocketRepositoryImpl @Inject constructor(
                     else -> null
                 }
             }
-        }
+        }*/
     }
 
     override suspend fun closeSession() {
@@ -76,7 +101,7 @@ class ChatSocketRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getOnlineStatus() {
-        chatSocketService.sendGetOnlineStatus()
+        chatSocketService.sendGetActiveStatus()
     }
 
     override suspend fun sendMessage(
@@ -86,7 +111,7 @@ class ChatSocketRepositoryImpl @Inject constructor(
         chatSocketService.sendMessage(receiverId, message)
     }
 
-    override suspend fun sendReadMessage(messageId: String) {
+    override suspend fun sendReadMessage(messageId: Int) {
         chatSocketService.sendReadMessage(messageId)
     }
 

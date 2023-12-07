@@ -1,47 +1,45 @@
 package com.example.chatapp.ui.feature.conversationslist
 
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.data.repository.ConversationRepository
+import com.example.chatapp.data.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class ConversationsListViewModel @Inject constructor(
     private val conversationRepository: ConversationRepository,
-    private val authRepository: AuthRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
-    private val _state = mutableStateOf(ConversationsListState())
-    val state: State<ConversationsListState> = _state
+    private val _state = MutableStateFlow(ConversationsListState())
+    val state = _state.asStateFlow()
 
-    private val logoutChannel = Channel<Unit>()
-    val logoutResult = logoutChannel.receiveAsFlow()
+    val currentUserStateFlow = userRepository.currentUser
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = null
+        )
 
-    init {
+    fun getConversationsList() {
         viewModelScope.launch {
             _state.value = _state.value.copy(
                 isLoading = true
             )
+
             conversationRepository.getConversations().collect {
                 _state.value = _state.value.copy(
                     isLoading = false,
                     conversationsList = it
                 )
             }
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch {
-            authRepository.logout()
-            logoutChannel.send(Unit)
         }
     }
 }
