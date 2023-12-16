@@ -17,10 +17,14 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 sealed interface SocketResult {
-    data object  Open : SocketResult
     data class NewMessage(val message: Message) : SocketResult
-    data class Conversations(val conversations: List<Conversation>) : SocketResult
-    data class OnlineStatus(val onlineUserIds: List<Int>) : SocketResult
+    data class UnreadStatus(
+        val hasConversationsUnread: Boolean,
+        val unreadMessagesCount: Int
+    ) : SocketResult
+
+    data class ActiveStatus(val activeUserIds: List<Int>) : SocketResult
+    data object Empty : SocketResult
     data object Error : SocketResult
 }
 
@@ -30,64 +34,41 @@ class ChatSocketRepositoryImpl @Inject constructor(
     private val sharedPreferences: SharedPreferences,
 ) : ChatSocketRepository {
 
-    private val coroutineScope = CoroutineScope(Dispatchers.Default)
-
     override val conversationsListFlow: Flow<List<Conversation>>
         get() = localDataSource.conversationsListFlow
 
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
-    override suspend fun openSession(): Flow<SocketResult?> {
+    override suspend fun openSession(openSocketCallback: (isOpen: Boolean) -> Unit): Flow<SocketResult> {
         val accessToken = sharedPreferences.getString("accessToken", null)
         val userId = accessToken.getUserIdFromToken()
 
         val socketResult = chatSocketService.initSession(userId)
-        return when {
-            socketResult.isSuccess -> {
-                chatSocketService.observeNewMessages()
-                    .map {
-                        when (it) {
-                            is SocketSessionResult.MessageReceived ->
-                                SocketResult.NewMessage(it.message.toMessage(userId))
-                            else -> SocketResult.Open
-                        }
-                    }
-            }
-            socketResult.isFailure -> {
-                flowOf(SocketResult.Error)
-            }
+        return if (socketResult.isSuccess) {
+            openSocketCallback(true)
+            chatSocketService.observeSocketResultFlow()
+                .map {
+                    when (it) {
+                        is SocketSessionResult.MessageReceived ->
+                            SocketResult.NewMessage(it.message.toMessage(userId))
 
-            else -> emptyFlow()
-        }
-
-        /*return withContext(coroutineScope.coroutineContext) {
-            chatSocketService.initSession(userId).map {
-                when (it) {
-                    is SocketSessionResult.SocketOpen -> SocketResult.Open
-                    is SocketSessionResult.MessageReceived -> {
-                        val message = it.message.toMessage(userId)
-                        SocketResult.NewMessage(message)
-                    }
-
-                    is SocketSessionResult.ConversationsList -> {
-                        val conversations = it.conversationsList.map { response ->
-                            response.toConversation(userId)
+                        is SocketSessionResult.UnreadStatus -> {
+                            SocketResult.UnreadStatus(
+                                hasConversationsUnread = it.unreadStatusResponse.hasConversationsUnread,
+                                unreadMessagesCount = it.unreadStatusResponse.unreadMessagesCount,
+                            )
                         }
 
-                        localDataSource.saveConversationsList(conversations)
+                        is SocketSessionResult.ActiveStatus -> SocketResult.ActiveStatus(it.activeStatusResponse.activeUserIds)
 
-                        SocketResult.Conversations(localDataSource.getConversationsList())
+                        SocketSessionResult.EmptyResult -> SocketResult.Empty
                     }
-
-                    is SocketSessionResult.OnlineStatus -> {
-                        SocketResult.OnlineStatus(it.onlineStatusResponse.onlineUserIds)
-                    }
-
-                    else -> null
                 }
-            }
-        }*/
+        } else {
+            openSocketCallback(false)
+            emptyFlow()
+        }
     }
 
     override suspend fun closeSession() {

@@ -9,7 +9,7 @@ interface ChatSocketService {
         userId: String
     ): Result<Unit>
 
-    fun observeNewMessages(): Flow<SocketSessionResult>
+    fun observeSocketResultFlow(): Flow<SocketSessionResult>
 
     suspend fun sendGetConversationsList(userId: String)
 

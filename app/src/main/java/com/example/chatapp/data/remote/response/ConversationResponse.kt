@@ -20,7 +20,8 @@ data class ConversationResponse(
     val members: List<ConversationMemberResponse>,
     val unreadCount: Int,
     val lastMessage: String?,
-    val timestamp: Long,
+    val createdAt: Long,
+    val updatedAt: Long,
 )
 
 @Serializable
@@ -35,7 +36,7 @@ data class ConversationMemberResponse(
 fun ConversationResponse.toConversation(userId: String): Conversation {
 
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
-    val date = Date(this.timestamp)
+    val date = Date(this.updatedAt)
 
     return Conversation(
         id = this.id,

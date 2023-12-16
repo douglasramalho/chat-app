@@ -62,14 +62,9 @@ class ChatAppState(
 
         when (topLevelDestination) {
             TopLevelDestination.CHATS -> navController.navigateToChats(topLevelNavOptions)
-            TopLevelDestination.CALLS -> {
-            }
 
             TopLevelDestination.PLUS_BUTTON -> {
                 navController.navigateToUsers()
-            }
-
-            TopLevelDestination.SEARCH -> {
             }
 
             TopLevelDestination.PROFILE -> navController.navigateToProfile(topLevelNavOptions)

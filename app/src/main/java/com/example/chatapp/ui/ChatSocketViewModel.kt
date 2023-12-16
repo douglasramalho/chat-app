@@ -11,7 +11,8 @@ import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -33,11 +34,53 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationsListState = mutableStateOf(ConversationsListState())
     val conversationsListState: State<ConversationsListState> = _conversationsListState
 
-    init {
-        connectChatSocket()
+    private val _socketOpenState = MutableStateFlow(false)
+    val socketOpenState = _socketOpenState.asStateFlow()
+
+    fun openSocketConnection(
+        onConversationsList: (() -> Unit)? = null
+    ) {
+        viewModelScope.launch {
+            chatSocketRepository.openSession { isOpen ->
+                _socketOpenState.value = isOpen
+            }.onEach {
+                when (it) {
+                    is SocketResult.NewMessage -> {
+                        val message = it.message
+                        val newList = conversationState.value.messages.toMutableList().apply {
+                            add(0, message)
+                        }
+
+                        _conversationState.value =
+                            _conversationState.value.copy(messages = newList)
+                    }
+
+                    is SocketResult.UnreadStatus -> {
+                        onConversationsList?.invoke()
+                    }
+
+                    is SocketResult.ActiveStatus -> {
+                        _conversationState.value.receiver?.let { receiver ->
+                            _conversationState.value = _conversationState.value.copy(
+                                isOnline = it.activeUserIds.contains(
+                                    receiver.id.toInt()
+                                )
+                            )
+                        }
+                    }
+
+                    SocketResult.Empty -> {
+                    }
+
+                    SocketResult.Error -> {
+
+                    }
+                }
+            }.launchIn(viewModelScope)
+        }
     }
 
-    fun init(receiverId: String) {
+    fun onConversation(receiverId: String) {
         getOnlineStatus()
 
         viewModelScope.launch {
@@ -61,61 +104,12 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    private fun connectChatSocket() {
-        viewModelScope.launch {
-            chatSocketRepository.openSession()
-                .onEach {
-                    when (it) {
-                        is SocketResult.Open -> {
-                        }
-
-                        is SocketResult.NewMessage -> {
-                            val message = it.message
-                            val newList = conversationState.value.messages.toMutableList().apply {
-                                add(0, message)
-                            }
-
-                            _conversationState.value =
-                                _conversationState.value.copy(messages = newList)
-                        }
-
-                        is SocketResult.Conversations -> {
-                            _conversationsListState.value = _conversationsListState.value.copy(
-                                isLoading = false,
-                                conversationsList = it.conversations
-                            )
-                        }
-
-                        is SocketResult.OnlineStatus -> {
-                            _conversationState.value.receiver?.let { receiver ->
-                                _conversationState.value = _conversationState.value.copy(
-                                    isOnline = it.onlineUserIds.contains(
-                                        receiver.id.toInt()
-                                    )
-                                )
-                            }
-                        }
-
-                        else -> {
-                        }
-                    }
-                }.launchIn(viewModelScope)
-        }
-    }
-
     fun onMessageChange(message: String) {
         _messageTextState.value = message
     }
 
-    fun getConversations() {
-        viewModelScope.launch {
-            chatSocketRepository.getConversationsList()
-        }
-    }
-
     private fun getOnlineStatus() {
         viewModelScope.launch {
-            delay(1_000)
             chatSocketRepository.getOnlineStatus()
         }
     }
@@ -141,7 +135,7 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    fun closeConnection() {
+    fun closeSocketConnection() {
         viewModelScope.launch {
             chatSocketRepository.closeSession()
         }
@@ -149,6 +143,6 @@ class ChatSocketViewModel @Inject constructor(
 
     override fun onCleared() {
         super.onCleared()
-        closeConnection()
+        closeSocketConnection()
     }
 }

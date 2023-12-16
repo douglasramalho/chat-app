@@ -43,7 +43,17 @@ fun ConversationsListRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
+                chatSocketViewModel.openSocketConnection(
+                    onConversationsList = {
+                        viewModel.getConversationsList()
+                    }
+                )
+
                 viewModel.getConversationsList()
+            }
+
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                chatSocketViewModel.closeSocketConnection()
             }
         }
 

@@ -41,7 +41,10 @@ object ApiModule {
                 level = LogLevel.ALL
             }
             install(ContentNegotiation) {
-                json()
+                json(Json {
+                    prettyPrint = true
+                    ignoreUnknownKeys = true
+                })
             }
         }
     }

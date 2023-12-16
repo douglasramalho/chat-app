@@ -17,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.chatapp.model.Message
 import com.example.chatapp.model.User
@@ -49,7 +51,11 @@ fun ConversationRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                chatSocketViewModel.init(receiverId!!)
+                chatSocketViewModel.openSocketConnection()
+            }
+
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                chatSocketViewModel.closeSocketConnection()
             }
         }
 
@@ -57,6 +63,13 @@ fun ConversationRoute(
 
         onDispose {
             lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    val isSocketOpen by chatSocketViewModel.socketOpenState.collectAsStateWithLifecycle()
+    LaunchedEffect(isSocketOpen) {
+        if (isSocketOpen) {
+            chatSocketViewModel.onConversation(receiverId!!)
         }
     }
 
