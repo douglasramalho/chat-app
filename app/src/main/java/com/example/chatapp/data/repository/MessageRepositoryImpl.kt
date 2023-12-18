@@ -23,7 +23,7 @@ class MessageRepositoryImpl @Inject constructor(
 
         return try {
             flowOf(
-                remoteDataSource.getMessages(accessToken, receiverId)
+                remoteDataSource.getMessages(receiverId)
                     .messages
                     .map {
                         it.toMessage(userId)

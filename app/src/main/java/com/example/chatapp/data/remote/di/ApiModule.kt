@@ -19,6 +19,7 @@ import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
 import io.ktor.client.plugins.plugin
+import io.ktor.client.plugins.resources.Resources
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.header
 import io.ktor.http.ContentType
@@ -60,6 +61,8 @@ object ApiModule {
         sharedPreferences: SharedPreferences
     ): HttpClient {
         val client = HttpClient(Android) {
+            install(Resources)
+
             install(Logging) {
                 logger = Logger.SIMPLE
                 level = LogLevel.ALL

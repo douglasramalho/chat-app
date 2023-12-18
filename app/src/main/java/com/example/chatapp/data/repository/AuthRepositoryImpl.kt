@@ -73,7 +73,7 @@ class AuthRepositoryImpl @Inject constructor(
             Result.Error(AppError.ApiError.Unauthorized)
         } else {
             try {
-                val userResponse = remoteDataSource.authenticate("Bearer $accessToken")
+                val userResponse = remoteDataSource.authenticate()
                 val user = userResponse.toModel()
 
                 userRepository.saveCurrentUser(user)

@@ -13,13 +13,13 @@ interface RemoteDataSource {
 
     suspend fun signIn(request: AuthRequest): TokenResponse
 
-    suspend fun authenticate(token: String): UserResponse
+    suspend fun authenticate(): UserResponse
 
-    suspend fun getConversations(token: String): PaginatedConversationResponse
+    suspend fun getConversations(): PaginatedConversationResponse
 
-    suspend fun getMessages(token: String, receiverId: String): PaginatedMessageResponse
+    suspend fun getMessages(receiverId: String): PaginatedMessageResponse
 
-    suspend fun getUsers(token: String): List<UserResponse>
+    suspend fun getUsers(): List<UserResponse>
 
-    suspend fun getUser(token: String, userId: String): UserResponse
+    suspend fun getUser(userId: String): UserResponse
 }

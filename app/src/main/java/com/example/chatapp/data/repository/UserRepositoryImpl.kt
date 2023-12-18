@@ -18,7 +18,6 @@ class UserRepositoryImpl @Inject constructor(
     private val context: Context,
     private val remoteDataSource: RemoteDataSource,
     private val localDataSource: LocalDataSource,
-    private val prefs: SharedPreferences
 ) : UserRepository {
 
     override val currentUser: Flow<User?>
@@ -50,8 +49,7 @@ class UserRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAndStoreUsers() {
-        val accessToken = prefs.getString("accessToken", "") ?: ""
-        val users = remoteDataSource.getUsers(accessToken).map {
+        val users = remoteDataSource.getUsers().map {
             it.toModel()
         }
 
@@ -64,9 +62,7 @@ class UserRepositoryImpl @Inject constructor(
         }
 
         if (user.firstOrNull() == null) {
-            val accessToken = prefs.getString("accessToken", "") ?: ""
             val userResponse = remoteDataSource.getUser(
-                token = accessToken,
                 userId = userId
             )
 
