@@ -73,6 +73,7 @@ fun NavGraphBuilder.chatsNavGraph(
             }
 
             val chatSocketViewModel: ChatSocketViewModel = hiltViewModel(parentEntry)
+            chatSocketViewModel.setReceiverId(it.arguments?.getString("receiverId"))
 
             ConversationRoute(
                 chatSocketViewModel = chatSocketViewModel,

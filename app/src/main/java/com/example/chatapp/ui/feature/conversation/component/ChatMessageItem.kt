@@ -3,6 +3,7 @@ package com.example.chatapp.ui.feature.conversation.component
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,11 +28,12 @@ fun ChatMessageItem(
 
     Box(
         modifier = Modifier
+            .wrapContentWidth()
             .padding(start = paddingStart, end = paddingEnd)
             .background(
                 color = if (message.isOwnMessage) {
-                    MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f)
-                } else MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.75f)
+                } else MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f),
                 shape = RoundedCornerShape(32.dp),
             )
     ) {
@@ -44,7 +46,25 @@ fun ChatMessageItem(
 
 @Composable
 @Preview(showBackground = true)
-fun PreviewChatMessage() {
+fun PreviewOwnMessage() {
+    ChatAppTheme {
+        ChatMessageItem(
+            message = Message(
+                id = 1,
+                senderId = 1,
+                receiverId = 2,
+                text = "Olá",
+                formattedTime = "21:00",
+                isUnread = true,
+                isOwnMessage = true,
+            )
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewOtherMessage() {
     ChatAppTheme {
         ChatMessageItem(
             message = Message(

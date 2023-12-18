@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.ChatSocketRepository
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.SocketResult
+import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
-import com.example.chatapp.ui.feature.conversationslist.ConversationsListState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -23,6 +23,7 @@ import javax.inject.Inject
 class ChatSocketViewModel @Inject constructor(
     private val messageRepository: MessageRepository,
     private val chatSocketRepository: ChatSocketRepository,
+    private val userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _messageTextState = mutableStateOf("")
@@ -31,18 +32,18 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationState = mutableStateOf(ConversationState())
     val conversationState: State<ConversationState> = _conversationState
 
-    private val _conversationsListState = mutableStateOf(ConversationsListState())
-    val conversationsListState: State<ConversationsListState> = _conversationsListState
-
-    private val _socketOpenState = MutableStateFlow(false)
-    val socketOpenState = _socketOpenState.asStateFlow()
+    private val _receiverIdFlow = MutableStateFlow<String?>(null)
 
     fun openSocketConnection(
         onConversationsList: (() -> Unit)? = null
     ) {
         viewModelScope.launch {
             chatSocketRepository.openSession { isOpen ->
-                _socketOpenState.value = isOpen
+                if (isOpen) {
+                    _receiverIdFlow.value?.let {
+                        onConversation(it)
+                    }
+                }
             }.onEach {
                 when (it) {
                     is SocketResult.NewMessage -> {
@@ -80,16 +81,15 @@ class ChatSocketViewModel @Inject constructor(
         }
     }
 
-    fun onConversation(receiverId: String) {
+    private fun onConversation(receiverId: String) {
         getOnlineStatus()
 
         viewModelScope.launch {
-            _conversationsListState.value = _conversationsListState.value.copy(
-                isLoading = true
-            )
-
             _conversationState.value =
-                _conversationState.value.copy(isLoading = true)
+                _conversationState.value.copy(
+                    isLoading = true,
+                    receiver = userRepository.getUserFlowBy(receiverId).first()
+                )
 
             messageRepository.getMessages(receiverId)
                 .catch {
@@ -144,5 +144,9 @@ class ChatSocketViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         closeSocketConnection()
+    }
+
+    fun setReceiverId(receiverId: String?) {
+        _receiverIdFlow.value = receiverId ?: ""
     }
 }

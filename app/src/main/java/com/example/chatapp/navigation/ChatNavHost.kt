@@ -27,7 +27,7 @@ fun ChatNavHost(
 
                 if (isLoggedIn) {
                     navController.navigateToChats(navOptions)
-                } else navController.navigate("signIn")
+                } else navController.navigate("signIn", navOptions)
             }
         }
         composable("signIn") {

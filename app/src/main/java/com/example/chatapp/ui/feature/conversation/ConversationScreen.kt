@@ -66,13 +66,6 @@ fun ConversationRoute(
         }
     }
 
-    val isSocketOpen by chatSocketViewModel.socketOpenState.collectAsStateWithLifecycle()
-    LaunchedEffect(isSocketOpen) {
-        if (isSocketOpen) {
-            chatSocketViewModel.onConversation(receiverId!!)
-        }
-    }
-
     val state by chatSocketViewModel.conversationState
     val messageText by chatSocketViewModel.messageTextState
 
@@ -148,40 +141,24 @@ fun ConversationScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom)
             ) {
                 itemsIndexed(messages) { index, item ->
-                    if (index == 0) {
-                        if (item.isOwnMessage) {
-                            Text(
-                                text = item.formattedTime,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.End
-                            )
-                        } else {
-                            Text(
-                                text = item.formattedTime,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                            )
-                        }
-                    }
 
-                    if (index > 0) {
-                        if (item.isOwnMessage && !messages[index - 1].isOwnMessage) {
-                            Text(
-                                text = item.formattedTime,
-                                modifier = Modifier
-                                    .fillMaxWidth(),
-                                textAlign = TextAlign.End
-                            )
-                        }
-
-                        if (!item.isOwnMessage && messages[index - 1].isOwnMessage) {
-                            Text(
-                                text = item.formattedTime,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                            )
-                        }
+                    if (item.isOwnMessage) {
+                        Text(
+                            text = item.formattedTime,
+                            modifier = Modifier
+                                .padding(end = 16.dp)
+                                .fillMaxWidth(),
+                            textAlign = TextAlign.End,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    } else {
+                        Text(
+                            text = item.formattedTime,
+                            modifier = Modifier
+                                .padding(start = 16.dp)
+                                .fillMaxWidth(),
+                            style = MaterialTheme.typography.labelSmall
+                        )
                     }
 
                     Box(

@@ -64,9 +64,9 @@ class UserRepositoryImpl @Inject constructor(
         }
 
         if (user.firstOrNull() == null) {
-            val accessToken = prefs.getString("accessToken", "")
+            val accessToken = prefs.getString("accessToken", "") ?: ""
             val userResponse = remoteDataSource.getUser(
-                token = "Bearer ${accessToken!!}",
+                token = accessToken,
                 userId = userId
             )
 

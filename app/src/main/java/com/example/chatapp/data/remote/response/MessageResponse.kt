@@ -2,8 +2,9 @@ package com.example.chatapp.data.remote.response
 
 import com.example.chatapp.model.Message
 import kotlinx.serialization.Serializable
-import java.text.DateFormat
-import java.util.Date
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 @Serializable
 data class PaginatedMessageResponse(
@@ -27,7 +28,14 @@ fun MessageResponse.toMessage(userId: String) = Message(
     senderId = this.senderId,
     receiverId = this.receiverId,
     text = this.text,
-    formattedTime = DateFormat.getDateInstance(DateFormat.DEFAULT).format(Date(this.timestamp)),
+    formattedTime = this.getFormattedTime(),
     isUnread = this.isUnread,
     isOwnMessage = this.senderId == userId.toInt()
 )
+
+private fun MessageResponse.getFormattedTime(): String {
+    val calendar = Calendar.getInstance()
+    calendar.timeInMillis = this.timestamp
+    val simpleDateFormat = SimpleDateFormat("HH:mm", Locale.getDefault())
+    return simpleDateFormat.format(calendar.time)
+}
