@@ -1,6 +1,6 @@
 package com.example.chatapp.data.remote.di
 
-import android.util.Log
+import android.content.SharedPreferences
 import com.example.chatapp.data.remote.ChatApiService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
@@ -11,12 +11,16 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
+import io.ktor.client.plugins.logging.SIMPLE
+import io.ktor.client.plugins.plugin
 import io.ktor.client.plugins.websocket.WebSockets
+import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -37,7 +41,7 @@ object ApiModule {
         return HttpClient(CIO) {
             install(WebSockets)
             install(Logging) {
-                logger = LogcatLogger()
+                logger = Logger.SIMPLE
                 level = LogLevel.ALL
             }
             install(ContentNegotiation) {
@@ -49,20 +53,15 @@ object ApiModule {
         }
     }
 
-    class LogcatLogger : Logger {
-        override fun log(message: String) {
-            Log.d("Logger", "log: $message")
-        }
-
-    }
-
     @Provides
     @Singleton
     @ApiHttpClient
-    fun provideClient(): HttpClient {
-        return HttpClient(Android) {
+    fun provideClient(
+        sharedPreferences: SharedPreferences
+    ): HttpClient {
+        val client = HttpClient(Android) {
             install(Logging) {
-                logger = LogcatLogger()
+                logger = Logger.SIMPLE
                 level = LogLevel.ALL
             }
 
@@ -84,6 +83,14 @@ object ApiModule {
                 connectTimeout = 30_000
             }
         }
+
+        client.plugin(HttpSend).intercept { request ->
+            val accessToken = sharedPreferences.getString("accessToken", null)
+            request.header("Authorization", "Bearer $accessToken")
+            execute(request)
+        }
+
+        return client
     }
 
     @Provides

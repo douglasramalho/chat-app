@@ -36,16 +36,13 @@ class RemoteDataSourceImpl @Inject constructor(
 
     override suspend fun authenticate(token: String): UserResponse {
         return safeApiCall {
-            httpClient.get("authenticate") {
-                header("Authorization", token)
-            }.body()
+            httpClient.get("authenticate").body()
         }
     }
 
     override suspend fun getConversations(token: String): PaginatedConversationResponse {
         return safeApiCall {
             httpClient.get("conversations") {
-                header("Authorization", "Bearer $token")
                 parameters {
                     append("offset", "0")
                     append("limit", "10")
@@ -56,7 +53,6 @@ class RemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getMessages(token: String, receiverId: String): PaginatedMessageResponse {
         return httpClient.get("messages/$receiverId") {
-            header("Authorization", "Bearer $token")
             parameters {
                 append("offset", "0")
                 append("limit", "10")
@@ -67,7 +63,6 @@ class RemoteDataSourceImpl @Inject constructor(
     override suspend fun getUsers(token: String): List<UserResponse> {
         return safeApiCall {
             httpClient.get("users") {
-                header("Authorization", "Bearer $token")
                 parameters {
                     append("offset", "0")
                     append("limit", "10")
@@ -78,9 +73,7 @@ class RemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getUser(token: String, userId: String): UserResponse {
         return safeApiCall {
-            httpClient.get("users/$userId") {
-                header("Authorization", "Bearer $token")
-            }.body()
+            httpClient.get("users/$userId").body()
         }
     }
 }
