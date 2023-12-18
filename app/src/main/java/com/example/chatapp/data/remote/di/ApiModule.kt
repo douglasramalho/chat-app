@@ -12,6 +12,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.cio.CIO
 import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.auth.Auth
+import io.ktor.client.plugins.auth.providers.BearerTokens
+import io.ktor.client.plugins.auth.providers.bearer
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.logging.LogLevel
@@ -60,7 +63,7 @@ object ApiModule {
     fun provideClient(
         sharedPreferences: SharedPreferences
     ): HttpClient {
-        val client = HttpClient(Android) {
+        return HttpClient(Android) {
             install(Resources)
 
             install(Logging) {
@@ -76,6 +79,20 @@ object ApiModule {
                 })
             }
 
+            install(Auth) {
+                bearer {
+                    loadTokens {
+                        val accessToken = sharedPreferences.getString("accessToken", null)
+                        accessToken?.let {
+                            BearerTokens(
+                                accessToken = it,
+                                ""
+                            )
+                        }
+                    }
+                }
+            }
+
             defaultRequest {
                 // Prod: https://chat-api.douglasmotta.com.br
                 url("http://192.168.1.68:8080/")
@@ -86,14 +103,6 @@ object ApiModule {
                 connectTimeout = 30_000
             }
         }
-
-        client.plugin(HttpSend).intercept { request ->
-            val accessToken = sharedPreferences.getString("accessToken", null)
-            request.header("Authorization", "Bearer $accessToken")
-            execute(request)
-        }
-
-        return client
     }
 
     @Provides
