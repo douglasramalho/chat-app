@@ -18,7 +18,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val remoteDataSource: RemoteDataSource,
     private val prefs: SharedPreferences,
     private val userRepository: UserRepository,
-    private val localDataSource: LocalDataSource,
 ) : AuthRepository {
 
     override suspend fun signUp(
@@ -91,7 +90,6 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         userRepository.saveCurrentUser(null)
-        localDataSource.clear()
 
         prefs.edit()
             .clear()

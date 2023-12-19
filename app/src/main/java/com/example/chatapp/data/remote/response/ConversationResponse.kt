@@ -33,7 +33,7 @@ data class ConversationMemberResponse(
     val profilePictureUrl: String?,
 )
 
-fun ConversationResponse.toConversation(userId: String): Conversation {
+fun ConversationResponse.toModel(userId: String): Conversation {
 
     val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
     val date = Date(this.updatedAt)

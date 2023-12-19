@@ -1,10 +1,7 @@
 package com.example.chatapp.data.datastore
 
-import android.content.Context
 import androidx.datastore.core.CorruptionException
-import androidx.datastore.core.DataStore
 import androidx.datastore.core.Serializer
-import androidx.datastore.dataStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.SerializationException
@@ -35,8 +32,3 @@ class UserSerializer @Inject constructor() : Serializer<CurrentUser> {
         }
     }
 }
-
-val Context.currentUserDataStore: DataStore<CurrentUser> by dataStore(
-    fileName = "current_user.json",
-    serializer = UserSerializer()
-)

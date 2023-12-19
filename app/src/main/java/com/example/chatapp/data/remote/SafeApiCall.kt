@@ -8,7 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 internal suspend inline fun <reified T> safeApiCall(
-    dispatcher: CoroutineDispatcher = Dispatchers.Default,
+    dispatcher: CoroutineDispatcher = Dispatchers.IO,
     crossinline apiCall: suspend () -> HttpResponse
 ): T {
     return withContext(dispatcher) {

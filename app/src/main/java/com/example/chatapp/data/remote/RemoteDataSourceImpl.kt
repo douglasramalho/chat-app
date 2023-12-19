@@ -25,15 +25,19 @@ class RemoteDataSourceImpl @Inject constructor(
 ) : RemoteDataSource {
 
     override suspend fun signUp(request: CreateAccountRequest) {
-        httpClient.post("signup") {
-            setBody(request)
+        return safeApiCall {
+            httpClient.post("signup") {
+                setBody(request)
+            }
         }
     }
 
     override suspend fun signIn(request: AuthRequest): TokenResponse {
-        return httpClient.post("signin") {
-            setBody(request)
-        }.body()
+        return safeApiCall {
+            httpClient.post("signin") {
+                setBody(request)
+            }.body()
+        }
     }
 
     override suspend fun authenticate(): UserResponse {
@@ -49,7 +53,9 @@ class RemoteDataSourceImpl @Inject constructor(
     }
 
     override suspend fun getMessages(receiverId: String): PaginatedMessageResponse {
-        return httpClient.get(MessagesResource.Messages(receiverId = receiverId)).body()
+        return safeApiCall {
+            httpClient.get(MessagesResource.Messages(receiverId = receiverId)).body()
+        }
     }
 
     override suspend fun getUsers(): List<UserResponse> {

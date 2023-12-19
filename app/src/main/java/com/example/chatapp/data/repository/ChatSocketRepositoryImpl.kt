@@ -27,12 +27,8 @@ sealed interface SocketResult {
 
 class ChatSocketRepositoryImpl @Inject constructor(
     private val chatSocketService: ChatSocketService,
-    private val localDataSource: LocalDataSource,
     private val sharedPreferences: SharedPreferences,
 ) : ChatSocketRepository {
-
-    override val conversationsListFlow: Flow<List<Conversation>>
-        get() = localDataSource.conversationsListFlow
 
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
@@ -91,11 +87,5 @@ class ChatSocketRepositoryImpl @Inject constructor(
 
     override suspend fun sendReadMessage(messageId: Int) {
         chatSocketService.sendReadMessage(messageId)
-    }
-
-    override suspend fun getConversationBy(conversationId: String): Flow<Conversation?> {
-        return conversationsListFlow.map { conversations ->
-            conversations.firstOrNull { it.id == conversationId }
-        }
     }
 }

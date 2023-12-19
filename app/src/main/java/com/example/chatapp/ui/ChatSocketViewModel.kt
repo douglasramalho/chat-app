@@ -8,12 +8,11 @@ import com.example.chatapp.data.repository.ChatSocketRepository
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.SocketResult
 import com.example.chatapp.data.repository.UserRepository
+import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -83,23 +82,57 @@ class ChatSocketViewModel @Inject constructor(
 
     private fun onConversation(receiverId: String) {
         getOnlineStatus()
+        getReceiverUser(receiverId)
+        getMessages(receiverId)
+    }
 
+    private fun getReceiverUser(receiverId: String) {
         viewModelScope.launch {
-            _conversationState.value =
-                _conversationState.value.copy(
-                    isLoading = true,
-                    receiver = userRepository.getUserFlowBy(receiverId).first()
-                )
+            userRepository.getUser(receiverId)
+                .collect { resultStatus ->
+                    when (resultStatus) {
+                        is ResultStatus.Loading -> {
+                            _conversationState.value = _conversationState.value.copy(
+                                isLoading = true
+                            )
+                        }
 
-            messageRepository.getMessages(receiverId)
-                .catch {
+                        is ResultStatus.Error -> {
 
+                        }
+
+                        is ResultStatus.Success -> {
+                            _conversationState.value = _conversationState.value.copy(
+                                isLoading = false,
+                                receiver = resultStatus.data
+                            )
+                        }
+                    }
                 }
-                .collect {
-                    _conversationState.value = _conversationState.value.copy(
-                        messages = it,
-                        isLoading = false
-                    )
+        }
+    }
+
+    private fun getMessages(receiverId: String) {
+        viewModelScope.launch {
+            messageRepository.getMessages(receiverId)
+                .collect { resultStatus ->
+                    when (resultStatus) {
+                        is ResultStatus.Error -> {
+                        }
+
+                        ResultStatus.Loading -> {
+                            _conversationState.value = _conversationState.value.copy(
+                                isLoading = true
+                            )
+                        }
+
+                        is ResultStatus.Success -> {
+                            _conversationState.value = _conversationState.value.copy(
+                                messages = resultStatus.data,
+                                isLoading = false
+                            )
+                        }
+                    }
                 }
         }
     }

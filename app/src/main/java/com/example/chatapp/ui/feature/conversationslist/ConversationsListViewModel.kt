@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.ConversationRepository
 import com.example.chatapp.data.repository.UserRepository
+import com.example.chatapp.data.util.ResultStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -15,7 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ConversationsListViewModel @Inject constructor(
     private val conversationRepository: ConversationRepository,
-    private val userRepository: UserRepository,
+    userRepository: UserRepository,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ConversationsListState())
@@ -30,15 +31,25 @@ class ConversationsListViewModel @Inject constructor(
 
     fun getConversationsList() {
         viewModelScope.launch {
-            _state.value = _state.value.copy(
-                isLoading = true
-            )
+            conversationRepository.getConversations().collect { resultStatus ->
+                when (resultStatus) {
+                    is ResultStatus.Error -> {
 
-            conversationRepository.getConversations().collect {
-                _state.value = _state.value.copy(
-                    isLoading = false,
-                    conversationsList = it
-                )
+                    }
+
+                    ResultStatus.Loading -> {
+                        _state.value = _state.value.copy(
+                            isLoading = true
+                        )
+                    }
+
+                    is ResultStatus.Success -> {
+                        _state.value = _state.value.copy(
+                            isLoading = false,
+                            conversationsList = resultStatus.data
+                        )
+                    }
+                }
             }
         }
     }
