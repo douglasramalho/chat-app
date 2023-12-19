@@ -3,16 +3,13 @@ package com.example.chatapp.data.repository
 import android.content.SharedPreferences
 import com.example.chatapp.data.ChatSocketService
 import com.example.chatapp.data.SocketSessionResult
-import com.example.chatapp.data.remote.response.toMessage
+import com.example.chatapp.data.remote.response.toModel
 import com.example.chatapp.data.repository.extension.getUserIdFromToken
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.Message
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -51,7 +48,7 @@ class ChatSocketRepositoryImpl @Inject constructor(
                 .map {
                     when (it) {
                         is SocketSessionResult.MessageReceived ->
-                            SocketResult.NewMessage(it.message.toMessage(userId))
+                            SocketResult.NewMessage(it.message.toModel(userId))
 
                         is SocketSessionResult.UnreadStatus -> {
                             SocketResult.UnreadStatus(

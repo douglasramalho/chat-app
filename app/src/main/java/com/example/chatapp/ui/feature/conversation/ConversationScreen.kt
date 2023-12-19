@@ -17,19 +17,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
 import com.example.chatapp.model.Message
 import com.example.chatapp.model.User
@@ -69,7 +66,6 @@ fun ConversationRoute(
     val state by chatSocketViewModel.conversationState
     val messageText by chatSocketViewModel.messageTextState
 
-    val receiver = state.receiver
     val messages = state.messages
     messages.forEach {
         chatSocketViewModel.readMessage(it)
@@ -141,35 +137,14 @@ fun ConversationScreen(
                 verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom)
             ) {
                 itemsIndexed(messages) { index, item ->
+                    val previousMessage = if (index > 0) {
+                        messages[index - 1]
+                    } else null
 
-                    if (item.isOwnMessage) {
-                        Text(
-                            text = item.formattedTime,
-                            modifier = Modifier
-                                .padding(end = 16.dp)
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.End,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    } else {
-                        Text(
-                            text = item.formattedTime,
-                            modifier = Modifier
-                                .padding(start = 16.dp)
-                                .fillMaxWidth(),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-
-                    Box(
-                        contentAlignment = if (item.isOwnMessage) {
-                            Alignment.CenterEnd
-                        } else Alignment.CenterStart,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                    ) {
-                        ChatMessageItem(message = item)
-                    }
+                    ChatMessageItem(
+                        message = item,
+                        previousMessage = previousMessage,
+                    )
 
                     if (index < messages.lastIndex && item.isOwnMessage && !messages[index + 1].isOwnMessage) {
                         Spacer(modifier = Modifier.height(50.dp))
@@ -221,7 +196,7 @@ fun PreviewConversationScreen() {
                         senderId = 1,
                         receiverId = 2,
                         text = "Hello Raissa",
-                        formattedTime = "Today",
+                        formattedTime = "15:00",
                         isUnread = false,
                         isOwnMessage = true
                     ),
@@ -230,7 +205,7 @@ fun PreviewConversationScreen() {
                         senderId = 1,
                         receiverId = 2,
                         text = "Hello Douglas",
-                        formattedTime = "Today",
+                        formattedTime = "11:00",
                         isUnread = false,
                         isOwnMessage = false
                     ),
@@ -239,7 +214,7 @@ fun PreviewConversationScreen() {
                         senderId = 1,
                         receiverId = 2,
                         text = "How are you doing?",
-                        formattedTime = "Today",
+                        formattedTime = "11:00",
                         isUnread = false,
                         isOwnMessage = true
                     ),

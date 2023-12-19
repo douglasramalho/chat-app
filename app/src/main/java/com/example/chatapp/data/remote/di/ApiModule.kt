@@ -2,6 +2,7 @@ package com.example.chatapp.data.remote.di
 
 import android.content.SharedPreferences
 import com.example.chatapp.data.remote.ChatApiService
+import com.example.chatapp.data.remote.MyHttpException
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -11,7 +12,8 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.cio.CIO
-import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.auth.Auth
 import io.ktor.client.plugins.auth.providers.BearerTokens
 import io.ktor.client.plugins.auth.providers.bearer
@@ -21,10 +23,8 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logger
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.client.plugins.logging.SIMPLE
-import io.ktor.client.plugins.plugin
 import io.ktor.client.plugins.resources.Resources
 import io.ktor.client.plugins.websocket.WebSockets
-import io.ktor.client.request.header
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
@@ -64,6 +64,15 @@ object ApiModule {
         sharedPreferences: SharedPreferences
     ): HttpClient {
         return HttpClient(Android) {
+            expectSuccess = true
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { cause, request ->
+                    val clientException = cause as? ClientRequestException ?: return@handleResponseExceptionWithRequest
+                    val responseException = clientException.response
+                    throw MyHttpException(responseException)
+                }
+            }
+
             install(Resources)
 
             install(Logging) {

@@ -23,7 +23,7 @@ data class MessageResponse(
     val isUnread: Boolean,
 )
 
-fun MessageResponse.toMessage(userId: String) = Message(
+fun MessageResponse.toModel(userId: String) = Message(
     id = this.id,
     senderId = this.senderId,
     receiverId = this.receiverId,

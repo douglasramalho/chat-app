@@ -2,7 +2,7 @@ package com.example.chatapp.data.repository
 
 import android.content.SharedPreferences
 import com.example.chatapp.data.RemoteDataSource
-import com.example.chatapp.data.remote.response.toMessage
+import com.example.chatapp.data.remote.response.toModel
 import com.example.chatapp.data.repository.extension.getUserIdFromToken
 import com.example.chatapp.model.AppError
 import com.example.chatapp.model.Message
@@ -26,7 +26,7 @@ class MessageRepositoryImpl @Inject constructor(
                 remoteDataSource.getMessages(receiverId)
                     .messages
                     .map {
-                        it.toMessage(userId)
+                        it.toModel(userId)
                     }
             )
         } catch (e: Throwable) {
