@@ -1,6 +1,6 @@
 package com.example.chatapp.data.extension
 
-import com.example.chatapp.data.remote.MyHttpException
+import com.example.chatapp.data.network.MyHttpException
 import com.example.chatapp.model.AppError
 
 fun Throwable.errorMapping() = when (this) {

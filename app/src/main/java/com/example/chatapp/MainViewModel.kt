@@ -3,7 +3,7 @@ package com.example.chatapp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.AuthRepository
-import com.example.chatapp.model.Result
+import com.example.chatapp.data.util.ResultStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,11 +24,12 @@ class MainViewModel @Inject constructor(
 
     private fun authenticate() {
         viewModelScope.launch {
-            val result = authRepository.authenticate()
-            _uiState.value = when (result) {
-                Result.Loading -> UiState.Loading
-                is Result.Success -> UiState.Success
-                is Result.Error -> UiState.Error
+            authRepository.authenticate().collect { resultStatus ->
+                _uiState.value = when (resultStatus) {
+                    is ResultStatus.Error -> UiState.Error
+                    ResultStatus.Loading -> UiState.Loading
+                    is ResultStatus.Success -> UiState.Success
+                }
             }
         }
     }

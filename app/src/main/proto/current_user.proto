@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option java_package = "com.example.chatapp";
+option java_multiple_files = true;
+
+message CurrentUser {
+  string id = 1;
+  string firstName = 2;
+  string lastName = 3;
+  string email = 4;
+  string profilePictureUrl = 5;
+}

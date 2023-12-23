@@ -5,8 +5,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.chatapp.model.Result
 import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.model.AppError
@@ -70,15 +70,15 @@ class SignInViewModel @Inject constructor(
             authRepository.signIn(
                 username = formState.email,
                 password = formState.password
-            ).collect { result ->
-                _signInResultUiState.value = when (result) {
-                    Result.Loading -> SignInResultUiState.Loading
-                    is Result.Success -> {
+            ).collect { resultStatus ->
+                _signInResultUiState.value = when (resultStatus) {
+                    ResultStatus.Loading -> SignInResultUiState.Loading
+                    is ResultStatus.Success -> {
                         _navigateWhenSigningSuccessfully.send(Unit)
                         SignInResultUiState.Success
                     }
 
-                    is Result.Error -> when (result.exception) {
+                    is ResultStatus.Error -> when (resultStatus.exception) {
                         AppError.ApiError.Conflict -> SignInResultUiState.Error.InvalidUsernameOrPassword
                         else -> SignInResultUiState.Error.Generic
                     }

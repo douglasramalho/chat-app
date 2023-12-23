@@ -1,7 +1,6 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.model.Result
-import com.example.chatapp.model.User
+import com.example.chatapp.data.util.ResultStatus
 import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
@@ -12,11 +11,13 @@ interface AuthRepository {
         firstName: String,
         lastName: String,
         profilePictureUrl: String?,
-    ): Flow<Result<Unit>>
+    ): Flow<ResultStatus<Unit>>
 
-    suspend fun signIn(username: String, password: String): Flow<Result<Unit>>
+    suspend fun signIn(username: String, password: String): Flow<ResultStatus<Unit>>
 
-    suspend fun authenticate(): Result<Unit>
+    suspend fun authenticate(): Flow<ResultStatus<Unit>>
+
+    suspend fun isAuthenticated(): Boolean
 
     suspend fun logout()
 }

@@ -25,6 +25,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import coil.compose.AsyncImage
@@ -39,7 +40,7 @@ import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ConversationRoute(
-    chatSocketViewModel: ChatSocketViewModel,
+    chatSocketViewModel: ChatSocketViewModel = hiltViewModel(),
     receiverId: String?,
     onNavigationClick: () -> Unit,
 ) {

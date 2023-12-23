@@ -1,23 +1,26 @@
 package com.example.chatapp.data.repository
 
-import android.content.SharedPreferences
-import com.example.chatapp.data.RemoteDataSource
+import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
+import com.example.chatapp.data.datastore.DataStoreProtoDataSource
 import com.example.chatapp.data.extension.errorMapping
-import com.example.chatapp.data.remote.MyHttpException
-import com.example.chatapp.data.remote.request.AuthRequest
-import com.example.chatapp.data.remote.request.CreateAccountRequest
-import com.example.chatapp.data.remote.response.toModel
+import com.example.chatapp.data.network.MyHttpException
+import com.example.chatapp.data.network.NetworkDataSource
+import com.example.chatapp.data.network.request.AuthRequest
+import com.example.chatapp.data.network.request.CreateAccountRequest
+import com.example.chatapp.data.network.response.toModel
+import com.example.chatapp.data.util.ResultStatus
+import com.example.chatapp.data.util.getFlowResult
 import com.example.chatapp.model.AppError
-import com.example.chatapp.model.Result
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.lastOrNull
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
-    private val remoteDataSource: RemoteDataSource,
-    private val prefs: SharedPreferences,
-    private val userRepository: UserRepository,
+    private val networkDataSource: NetworkDataSource,
+    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    private val dataStorePreferencesDataSource: DataStorePreferencesDataSource,
 ) : AuthRepository {
 
     override suspend fun signUp(
@@ -26,73 +29,73 @@ class AuthRepositoryImpl @Inject constructor(
         firstName: String,
         lastName: String,
         profilePictureUrl: String?,
-    ): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
-        remoteDataSource.signUp(
-            request = CreateAccountRequest(
-                username = username,
-                password = password,
-                firstName = firstName,
-                lastName = lastName,
-                profilePictureUrl = profilePictureUrl,
+    ): Flow<ResultStatus<Unit>> {
+        val signUpResult = getFlowResult {
+            networkDataSource.signUp(
+                request = CreateAccountRequest(
+                    username = username,
+                    password = password,
+                    firstName = firstName,
+                    lastName = lastName,
+                    profilePictureUrl = profilePictureUrl,
+                )
             )
-        )
+        }
 
-        signIn(username, password)
-        emit(Result.Success(Unit))
-    }.catch {
-        emit(Result.Error(it.errorMapping()))
+        return if (signUpResult.lastOrNull() is ResultStatus.Success) {
+            signIn(username, password)
+        } else signUpResult
     }
 
-    override suspend fun signIn(username: String, password: String): Flow<Result<Unit>> = flow {
-        emit(Result.Loading)
-        val response = remoteDataSource.signIn(
-            request = AuthRequest(
-                username = username,
-                password = password
+    override suspend fun signIn(username: String, password: String): Flow<ResultStatus<Unit>> {
+        val signResult = getFlowResult {
+            networkDataSource.signIn(
+                request = AuthRequest(
+                    username = username,
+                    password = password
+                )
             )
-        )
+        }.lastOrNull()
 
-        prefs.edit()
-            .putString("accessToken", response.token)
-            .apply()
-
-        authenticate()
-
-        emit(Result.Success(Unit))
-    }.catch {
-        emit(Result.Error(it.errorMapping()))
+        return if (signResult is ResultStatus.Success) {
+            dataStorePreferencesDataSource.saveAccessToken(signResult.data.token)
+            authenticate()
+        } else flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
     }
 
-    override suspend fun authenticate(): Result<Unit> {
-        val accessToken = prefs.getString("accessToken", null)
-
-        return if (accessToken == null) {
-            logout()
-            Result.Error(AppError.ApiError.Unauthorized)
-        } else {
-            try {
-                val userResponse = remoteDataSource.authenticate()
-                val user = userResponse.toModel()
-
-                userRepository.saveCurrentUser(user)
-
-                Result.Success(Unit)
-            } catch (e: MyHttpException) {
-                if (e.code == 401) {
-                    logout()
+    override suspend fun authenticate(): Flow<ResultStatus<Unit>> {
+        return try {
+            if (!isAuthenticated()) {
+                flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
+            } else {
+                val authenticateResult = getFlowResult {
+                    networkDataSource.authenticate()
                 }
 
-                Result.Error(e.errorMapping())
+                when (val result = authenticateResult.lastOrNull()) {
+                    is ResultStatus.Success -> {
+                        val userResponse = result.data
+                        dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
+                        flowOf(ResultStatus.Success(Unit))
+                    }
+                    else -> flowOf(ResultStatus.Success(Unit))
+                }
             }
+        } catch (e: MyHttpException) {
+            if (e.code == 401) {
+                logout()
+            }
+
+            flowOf(ResultStatus.Error(e.errorMapping()))
         }
     }
 
-    override suspend fun logout() {
-        userRepository.saveCurrentUser(null)
+    override suspend fun isAuthenticated(): Boolean {
+        return !dataStorePreferencesDataSource.accessTokenFlow.firstOrNull().isNullOrEmpty()
+    }
 
-        prefs.edit()
-            .clear()
-            .apply()
+    override suspend fun logout() {
+        dataStoreProtoDataSource.clear()
+        dataStorePreferencesDataSource.clear()
     }
 }

@@ -2,6 +2,7 @@ package com.example.chatapp.ui
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.ChatSocketRepository
@@ -20,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ChatSocketViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val messageRepository: MessageRepository,
     private val chatSocketRepository: ChatSocketRepository,
     private val userRepository: UserRepository,
@@ -31,7 +33,7 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationState = mutableStateOf(ConversationState())
     val conversationState: State<ConversationState> = _conversationState
 
-    private val _receiverIdFlow = MutableStateFlow<String?>(null)
+    private val _receiverIdFlow = savedStateHandle.getStateFlow<String?>("receiverId", null)
 
     fun openSocketConnection(
         onConversationsList: (() -> Unit)? = null
@@ -177,9 +179,5 @@ class ChatSocketViewModel @Inject constructor(
     override fun onCleared() {
         super.onCleared()
         closeSocketConnection()
-    }
-
-    fun setReceiverId(receiverId: String?) {
-        _receiverIdFlow.value = receiverId ?: ""
     }
 }

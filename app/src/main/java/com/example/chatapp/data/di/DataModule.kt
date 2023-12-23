@@ -1,9 +1,9 @@
 package com.example.chatapp.data.di
 
-import com.example.chatapp.data.ChatSocketService
-import com.example.chatapp.data.ChatSocketServiceImpl
-import com.example.chatapp.data.RemoteDataSource
-import com.example.chatapp.data.remote.RemoteDataSourceImpl
+import com.example.chatapp.data.ws.ChatSocketService
+import com.example.chatapp.data.ws.ChatSocketServiceImpl
+import com.example.chatapp.data.network.NetworkDataSource
+import com.example.chatapp.data.network.NetworkDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -16,7 +16,7 @@ interface DataModule {
 
     @Binds
     @Singleton
-    fun bindRemoteDataSource(remoteDataSource: RemoteDataSourceImpl): RemoteDataSource
+    fun bindRemoteDataSource(remoteDataSource: NetworkDataSourceImpl): NetworkDataSource
 
     @Binds
     @Singleton

@@ -29,14 +29,7 @@ fun NavGraphBuilder.chatsNavGraph(
         startDestination = CHATS_DESTINATION
     ) {
         composable(CHATS_DESTINATION) {
-            val parentEntry = remember(it) {
-                navController.getBackStackEntry(CHATS_ROUTE)
-            }
-
-            val chatSocketViewModel: ChatSocketViewModel = hiltViewModel(parentEntry)
-
             ConversationsListRoute(
-                chatSocketViewModel = chatSocketViewModel,
                 navigateWhenConversationItemClicked = { receiverId ->
                     navController.navigate("conversation/$receiverId")
                 }
@@ -68,15 +61,7 @@ fun NavGraphBuilder.chatsNavGraph(
                 )
             }
         ) {
-            val parentEntry = remember(it) {
-                navController.getBackStackEntry(CHATS_ROUTE)
-            }
-
-            val chatSocketViewModel: ChatSocketViewModel = hiltViewModel(parentEntry)
-            chatSocketViewModel.setReceiverId(it.arguments?.getString("receiverId"))
-
             ConversationRoute(
-                chatSocketViewModel = chatSocketViewModel,
                 receiverId = it.arguments?.getString("receiverId")
             ) {
                 navController.popBackStack()

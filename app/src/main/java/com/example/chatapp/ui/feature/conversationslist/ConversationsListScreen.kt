@@ -20,7 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.chatapp.LocalActivity
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
 import com.example.chatapp.model.User
@@ -35,7 +34,7 @@ import com.example.chatapp.ui.theme.Grey1
 @Composable
 fun ConversationsListRoute(
     viewModel: ConversationsListViewModel = hiltViewModel(),
-    chatSocketViewModel: ChatSocketViewModel,
+    chatSocketViewModel: ChatSocketViewModel = hiltViewModel(),
     navigateWhenConversationItemClicked: (receiverId: String) -> Unit,
 ) {
 

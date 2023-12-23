@@ -1,9 +1,8 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.data.RemoteDataSource
-import com.example.chatapp.data.datastore.CurrentUser
-import com.example.chatapp.data.datastore.DataStoreStorage
-import com.example.chatapp.data.remote.response.toModel
+import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.network.NetworkDataSource
+import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.data.util.getFlowResult
 import com.example.chatapp.model.User
@@ -12,40 +11,26 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
-    private val dataStoreStorage: DataStoreStorage,
-    private val remoteDataSource: RemoteDataSource,
+    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    private val networkDataSource: NetworkDataSource,
 ) : UserRepository {
 
     override val currentUser: Flow<User?>
-        get() = dataStoreStorage.currentUser.map { currentUser ->
-            currentUser.id?.let { id ->
+        get() = dataStoreProtoDataSource.currentUser.map { currentUser ->
+            if (currentUser.id.isNotEmpty()) {
                 User(
-                    id = id,
-                    username = currentUser.email ?: "",
-                    firstName = currentUser.firstName ?: "",
-                    lastName = currentUser.firstName ?: "",
-                    profilePictureUrl = currentUser.profilePictureUrl ?: "",
+                    id = currentUser.id,
+                    username = currentUser.email,
+                    firstName = currentUser.firstName,
+                    lastName = currentUser.firstName,
+                    profilePictureUrl = currentUser.profilePictureUrl,
                 )
-            }
+            } else null
         }
-
-    override suspend fun saveCurrentUser(user: User?) {
-        user?.let {
-            dataStoreStorage.saveCurrentUser(
-                CurrentUser(
-                    id = it.id,
-                    firstName = it.firstName,
-                    lastName = it.lastName,
-                    email = it.username,
-                    profilePictureUrl = it.profilePictureUrl,
-                )
-            )
-        }
-    }
 
     override suspend fun getUsers(): Flow<ResultStatus<List<User>>> {
         return getFlowResult {
-            remoteDataSource.getUsers().map {
+            networkDataSource.getUsers().map {
                 it.toModel()
             }
         }
@@ -53,7 +38,7 @@ class UserRepositoryImpl @Inject constructor(
 
     override suspend fun getUser(userId: String): Flow<ResultStatus<User>> {
         return getFlowResult {
-            remoteDataSource.getUser(
+            networkDataSource.getUser(
                 userId = userId
             ).toModel()
         }

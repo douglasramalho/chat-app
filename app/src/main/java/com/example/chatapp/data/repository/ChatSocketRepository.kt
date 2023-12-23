@@ -12,8 +12,6 @@ interface ChatSocketRepository {
 
     suspend fun closeSession()
 
-    suspend fun getConversationsList()
-
     suspend fun getOnlineStatus()
 
     suspend fun sendMessage(

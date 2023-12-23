@@ -1,8 +1,8 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.data.RemoteDataSource
-import com.example.chatapp.data.datastore.DataStoreStorage
-import com.example.chatapp.data.remote.response.toModel
+import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.network.NetworkDataSource
+import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.data.util.getFlowResult
 import com.example.chatapp.model.Message
@@ -12,14 +12,14 @@ import kotlinx.coroutines.flow.flowOf
 import javax.inject.Inject
 
 class MessageRepositoryImpl @Inject constructor(
-    private val remoteDataSource: RemoteDataSource,
-    private val dataStoreStorage: DataStoreStorage,
+    private val networkDataSource: NetworkDataSource,
+    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
 ) : MessageRepository {
 
     override suspend fun getMessages(receiverId: String): Flow<ResultStatus<List<Message>>> {
-        return dataStoreStorage.currentUser.firstOrNull()?.id?.let { currentUserId ->
+        return dataStoreProtoDataSource.currentUser.firstOrNull()?.id?.let { currentUserId ->
             getFlowResult {
-                remoteDataSource.getMessages(receiverId)
+                networkDataSource.getMessages(receiverId)
                     .messages
                     .map {
                         it.toModel(currentUserId)

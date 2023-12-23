@@ -6,12 +6,12 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.domain.ValidatePasswordFieldUseCase
 import com.example.chatapp.mediastorage.MediaStorageHelper
 import com.example.chatapp.model.AppError
-import com.example.chatapp.model.Result
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
@@ -112,8 +112,8 @@ class SignUpViewModel @Inject constructor(
                 .onStart {
                     _signUpResultUiState.value = SignUpResultUiState.Loading
                 }
-                .flatMapLatest { result ->
-                    if (result is Result.Loading) {
+                .flatMapLatest { resultStatus ->
+                    if (resultStatus is ResultStatus.Loading) {
                         _signUpResultUiState.value = SignUpResultUiState.Loading
                     }
 
@@ -122,25 +122,25 @@ class SignUpViewModel @Inject constructor(
                         password = formState.password,
                         firstName = formState.firstName,
                         lastName = formState.lastName,
-                        profilePictureUrl = (result as? Result.Success)?.data
+                        profilePictureUrl = (resultStatus as? ResultStatus.Success)?.data
                     )
-                }.collect { result ->
-                    _signUpResultUiState.value = when (result) {
-                        Result.Loading -> SignUpResultUiState.Loading
+                }.collect { resultStatus ->
+                    _signUpResultUiState.value = when (resultStatus) {
+                        ResultStatus.Loading -> SignUpResultUiState.Loading
 
-                        is Result.Success -> {
+                        is ResultStatus.Success -> {
                             _navigateAfterSigningUpSuccessfully.send(Unit)
                             SignUpResultUiState.Success
                         }
 
-                        is Result.Error -> {
+                        is ResultStatus.Error -> {
                             formState.profilePhotoUri?.let {
                                 viewModelScope.launch {
                                     mediaStorageHelper.removeImage(profilePicturePath).collect()
                                 }
                             }
 
-                            when (result.exception) {
+                            when (resultStatus.exception) {
                                 AppError.ApiError.Conflict -> SignUpResultUiState.Error.UserWithUsernameAlreadyExists
                                 else -> SignUpResultUiState.Error.Generic
                             }
@@ -152,9 +152,10 @@ class SignUpViewModel @Inject constructor(
 
     private fun authenticate() {
         viewModelScope.launch {
-            val result = authRepository.authenticate()
-            if (result is Result.Success) {
-                _navigateAfterSigningUpSuccessfully.send(Unit)
+            authRepository.authenticate().collect { resultStatus ->
+                if (resultStatus is ResultStatus.Success) {
+                    _navigateAfterSigningUpSuccessfully.send(Unit)
+                }
             }
         }
     }

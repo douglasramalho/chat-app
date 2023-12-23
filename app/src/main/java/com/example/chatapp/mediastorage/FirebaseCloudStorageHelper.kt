@@ -1,8 +1,8 @@
 package com.example.chatapp.mediastorage
 
 import android.net.Uri
+import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.di.DefaultDispatcher
-import com.example.chatapp.model.Result
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.channels.awaitClose
@@ -19,7 +19,7 @@ class FirebaseCloudStorageHelper @Inject constructor(
 
     private val storageRef = storage.reference
 
-    override fun uploadImage(pathString: String, uri: Uri?): Flow<Result<String?>> =
+    override fun uploadImage(pathString: String, uri: Uri?): Flow<ResultStatus<String?>> =
         callbackFlow {
             withContext(defaultDispatcher) {
                 uri?.let {
@@ -31,14 +31,14 @@ class FirebaseCloudStorageHelper @Inject constructor(
                             imagesRef.downloadUrl
                         }
                         .addOnFailureListener {
-                            trySend(Result.Error(it))
+                            trySend(ResultStatus.Error(it))
                         }
                         .addOnCompleteListener { task ->
                             if (task.isSuccessful) {
-                                trySend(Result.Success(task.result.toString()))
-                            } else trySend(Result.Error(task.exception))
+                                trySend(ResultStatus.Success(task.result.toString()))
+                            } else trySend(ResultStatus.Error(task.exception))
                         }
-                } ?: trySend(Result.Success(null))
+                } ?: trySend(ResultStatus.Success(null))
             }
 
             awaitClose()

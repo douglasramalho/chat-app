@@ -1,15 +1,14 @@
 package com.example.chatapp.data.repository
 
-import android.content.SharedPreferences
-import com.example.chatapp.data.ChatSocketService
-import com.example.chatapp.data.SocketSessionResult
-import com.example.chatapp.data.remote.response.toModel
-import com.example.chatapp.data.repository.extension.getUserIdFromToken
-import com.example.chatapp.model.Conversation
+import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.network.response.toModel
+import com.example.chatapp.data.ws.ChatSocketService
+import com.example.chatapp.data.ws.SocketSessionResult
 import com.example.chatapp.model.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -27,24 +26,23 @@ sealed interface SocketResult {
 
 class ChatSocketRepositoryImpl @Inject constructor(
     private val chatSocketService: ChatSocketService,
-    private val sharedPreferences: SharedPreferences,
+    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
 ) : ChatSocketRepository {
 
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
     override suspend fun openSession(openSocketCallback: (isOpen: Boolean) -> Unit): Flow<SocketResult> {
-        val accessToken = sharedPreferences.getString("accessToken", null)
-        val userId = accessToken.getUserIdFromToken()
+        val currentUser = dataStoreProtoDataSource.currentUser.first()
 
-        val socketResult = chatSocketService.initSession(userId)
+        val socketResult = chatSocketService.initSession(currentUser.id)
         return if (socketResult.isSuccess) {
             openSocketCallback(true)
             chatSocketService.observeSocketResultFlow()
                 .map {
                     when (it) {
                         is SocketSessionResult.MessageReceived ->
-                            SocketResult.NewMessage(it.message.toModel(userId))
+                            SocketResult.NewMessage(it.message.toModel(currentUser.id))
 
                         is SocketSessionResult.UnreadStatus -> {
                             SocketResult.UnreadStatus(
@@ -66,12 +64,6 @@ class ChatSocketRepositoryImpl @Inject constructor(
 
     override suspend fun closeSession() {
         chatSocketService.closeSession()
-    }
-
-    override suspend fun getConversationsList() {
-        val accessToken = sharedPreferences.getString("accessToken", null)
-        val userId = accessToken.getUserIdFromToken()
-        chatSocketService.sendGetConversationsList(userId)
     }
 
     override suspend fun getOnlineStatus() {
