@@ -13,7 +13,9 @@ interface AuthRepository {
         profilePictureUrl: String?,
     ): Flow<ResultStatus<Unit>>
 
-    suspend fun signIn(username: String, password: String): Flow<ResultStatus<Unit>>
+    suspend fun signIn(username: String, password: String): Flow<ResultStatus<String>>
+
+    suspend fun saveAccessToken(accessToken: String)
 
     suspend fun authenticate(): Flow<ResultStatus<Unit>>
 

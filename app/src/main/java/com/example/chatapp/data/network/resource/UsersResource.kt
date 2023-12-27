@@ -8,9 +8,8 @@ object UsersResource {
     data class Users(
         val offset: String = "0",
         val limit: String = "10"
-    ) {
+    )
 
-        @Resource("{id}")
-        data class Id(val parent: Users = Users(), val id: String)
-    }
+    @Resource("/users/{id}")
+    data class ById(val id: String)
 }

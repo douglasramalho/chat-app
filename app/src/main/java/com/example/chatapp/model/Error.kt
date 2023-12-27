@@ -3,6 +3,8 @@ package com.example.chatapp.model
 sealed class AppError : Throwable() {
     sealed class ApiError : AppError() {
         data object Unauthorized : AppError()
+        data object NotFound : AppError()
+        data object BadRequest : AppError()
         data object Conflict : AppError()
         data class Unknown(override val message: String? = null) : AppError()
     }

@@ -28,7 +28,7 @@ fun ChatApp(
 ) {
     Scaffold(
         bottomBar = {
-            val topLevelDestinations = TopLevelDestination.values()
+            val topLevelDestinations = TopLevelDestination.entries.toTypedArray()
             if (topLevelDestinations.contains(appState.currentTopLevelDestination)) {
                 ChatNavigationBar(
                     destinations = appState.topLevelDestinations,

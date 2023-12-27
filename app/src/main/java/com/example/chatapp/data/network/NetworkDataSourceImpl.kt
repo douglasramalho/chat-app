@@ -65,7 +65,7 @@ class NetworkDataSourceImpl @Inject constructor(
 
     override suspend fun getUser(userId: String): UserResponse {
         return safeApiCall {
-            httpClient.get(UsersResource.Users.Id(id = userId)).body()
+            httpClient.get(UsersResource.ById(id = userId)).body()
         }
     }
 }

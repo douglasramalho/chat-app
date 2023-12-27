@@ -20,17 +20,15 @@ import com.example.chatapp.navigation.navigateToUsers
 @Composable
 fun rememberChatAppState(
     navController: NavHostController = rememberNavController(),
-    user: User? = null,
 ): ChatAppState {
-    return remember(navController, user) {
-        ChatAppState(navController, user)
+    return remember(navController) {
+        ChatAppState(navController)
     }
 }
 
 @Stable
 class ChatAppState(
     val navController: NavHostController,
-    val user: User?,
 ) {
     val currentDestination: NavDestination?
         @Composable get() = navController
@@ -43,7 +41,7 @@ class ChatAppState(
             else -> null
         }
 
-    val topLevelDestinations = TopLevelDestination.values().asList()
+    val topLevelDestinations = TopLevelDestination.entries
 
     fun navigateToTopLevelDestination(topLevelDestination: TopLevelDestination) {
         val topLevelNavOptions = navOptions {

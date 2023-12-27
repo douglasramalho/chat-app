@@ -2,8 +2,6 @@ package com.example.chatapp.data.repository
 
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
 import com.example.chatapp.data.datastore.DataStoreProtoDataSource
-import com.example.chatapp.data.extension.errorMapping
-import com.example.chatapp.data.network.MyHttpException
 import com.example.chatapp.data.network.NetworkDataSource
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
@@ -14,7 +12,7 @@ import com.example.chatapp.model.AppError
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.last
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -30,7 +28,7 @@ class AuthRepositoryImpl @Inject constructor(
         lastName: String,
         profilePictureUrl: String?,
     ): Flow<ResultStatus<Unit>> {
-        val signUpResult = getFlowResult {
+        return getFlowResult {
             networkDataSource.signUp(
                 request = CreateAccountRequest(
                     username = username,
@@ -41,52 +39,42 @@ class AuthRepositoryImpl @Inject constructor(
                 )
             )
         }
-
-        return if (signUpResult.lastOrNull() is ResultStatus.Success) {
-            signIn(username, password)
-        } else signUpResult
     }
 
-    override suspend fun signIn(username: String, password: String): Flow<ResultStatus<Unit>> {
-        val signResult = getFlowResult {
-            networkDataSource.signIn(
+    override suspend fun signIn(username: String, password: String): Flow<ResultStatus<String>> {
+        return getFlowResult {
+            val response = networkDataSource.signIn(
                 request = AuthRequest(
                     username = username,
                     password = password
                 )
             )
-        }.lastOrNull()
 
-        return if (signResult is ResultStatus.Success) {
-            dataStorePreferencesDataSource.saveAccessToken(signResult.data.token)
-            authenticate()
-        } else flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
+            response.token
+        }
+    }
+
+    override suspend fun saveAccessToken(accessToken: String) {
+        dataStorePreferencesDataSource.saveAccessToken(accessToken)
     }
 
     override suspend fun authenticate(): Flow<ResultStatus<Unit>> {
-        return try {
-            if (!isAuthenticated()) {
-                flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
-            } else {
-                val authenticateResult = getFlowResult {
-                    networkDataSource.authenticate()
-                }
-
-                when (val result = authenticateResult.lastOrNull()) {
-                    is ResultStatus.Success -> {
-                        val userResponse = result.data
-                        dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
-                        flowOf(ResultStatus.Success(Unit))
-                    }
-                    else -> flowOf(ResultStatus.Success(Unit))
-                }
-            }
-        } catch (e: MyHttpException) {
-            if (e.code == 401) {
-                logout()
+        return if (!isAuthenticated()) {
+            flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
+        } else {
+            val authenticateResult = getFlowResult {
+                networkDataSource.authenticate()
             }
 
-            flowOf(ResultStatus.Error(e.errorMapping()))
+            when (val result = authenticateResult.last()) {
+                is ResultStatus.Success -> {
+                    val userResponse = result.data
+                    dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
+                    flowOf(ResultStatus.Success(Unit))
+                }
+
+                else -> flowOf(result as ResultStatus.Error)
+            }
         }
     }
 

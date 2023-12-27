@@ -2,6 +2,7 @@ package com.example.chatapp.data.network.di
 
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
 import com.example.chatapp.data.network.ChatApiService
+import com.example.chatapp.data.network.NetworkError
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
@@ -11,6 +12,8 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.ClientRequestException
+import io.ktor.client.plugins.HttpResponseValidator
 import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -22,7 +25,9 @@ import io.ktor.client.plugins.plugin
 import io.ktor.client.plugins.resources.Resources
 import io.ktor.client.plugins.websocket.WebSockets
 import io.ktor.client.request.headers
+import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.firstOrNull
@@ -62,6 +67,24 @@ object ApiModule {
         dataStorePreferencesDataSource: DataStorePreferencesDataSource,
     ): HttpClient {
         return HttpClient(Android) {
+            expectSuccess = true
+            HttpResponseValidator {
+                handleResponseExceptionWithRequest { exception, request ->
+                    val clientException = exception as? ClientRequestException
+                        ?: return@handleResponseExceptionWithRequest
+                    val exceptionResponse = clientException.response
+                    throw when (val status = exceptionResponse.status) {
+                        HttpStatusCode.BadRequest -> NetworkError.BadRequest
+                        HttpStatusCode.NotFound -> NetworkError.NotFound
+                        HttpStatusCode.Conflict -> NetworkError.Conflict
+                        else -> NetworkError.Generic(
+                            status.value,
+                            exceptionResponse.bodyAsText()
+                        )
+                    }
+                }
+            }
+
             install(Resources)
 
             install(Logging) {

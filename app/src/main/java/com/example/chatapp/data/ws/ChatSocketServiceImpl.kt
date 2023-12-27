@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import okhttp3.WebSocket
 import javax.inject.Inject
 
 sealed class SocketSessionResult {

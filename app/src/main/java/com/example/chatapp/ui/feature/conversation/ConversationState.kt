@@ -6,6 +6,7 @@ import com.example.chatapp.model.User
 data class ConversationState(
     val receiver: User? = null,
     val messages: List<Message> = emptyList(),
+    val hasUnreadMessages: Boolean = false,
     val isOnline: Boolean = false,
     val isLoading: Boolean = false
 )

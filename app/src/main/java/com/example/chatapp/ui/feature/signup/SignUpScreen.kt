@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -46,7 +46,6 @@ import com.example.chatapp.ui.component.ChatPrimaryButton
 import com.example.chatapp.ui.component.ProfilePicture
 import com.example.chatapp.ui.component.SecondaryTextField
 import com.example.chatapp.ui.theme.ChatAppTheme
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignUpRoute(
@@ -55,22 +54,39 @@ fun SignUpRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSigInClicked: () -> Unit,
 ) {
-    val signUpResultUiState by viewModel.signUpResultUiState.collectAsStateWithLifecycle()
-    val formState = viewModel.formState
+    val signUpUiState by viewModel.signUpUiState.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
-
-    LaunchedEffect(viewModel, context) {
-        viewModel.navigateAfterSigningUpSuccessfully.collectLatest {
-            navigateWhenAuthorized()
+    val currentNavigateWhenAuthorized by rememberUpdatedState(navigateWhenAuthorized)
+    LaunchedEffect(signUpUiState) {
+        if (signUpUiState.isLoggedIn) {
+            currentNavigateWhenAuthorized()
         }
+    }
+
+    signUpUiState.errorMessageStringResId?.let {
+        val context = LocalContext.current
+
+        AlertDialog(
+            onDismissRequest = viewModel::errorMessageShown,
+            confirmButton = {
+                TextButton(
+                    onClick = viewModel::errorMessageShown
+                ) {
+                    Text(text = context.getString(R.string.common_ok))
+                }
+            },
+            title = {
+                Text(text = context.getString(R.string.common_generic_error_title))
+            },
+            text = {
+                Text(text = context.getString(it))
+            }
+        )
     }
 
     SignUpScreen(
         modifier = modifier,
-        signUpResultUiState = signUpResultUiState,
-        formState = formState,
-        onAlertDialogDismiss = { viewModel.resetSignUpResultUiState() },
+        signUpUiState = signUpUiState,
         onPhotoSelected = {
             viewModel.onEvent(SignUpEvent.ProfilePhotoUriChanged(it))
         },
@@ -101,9 +117,7 @@ fun SignUpRoute(
 @Composable
 private fun SignUpScreen(
     modifier: Modifier,
-    signUpResultUiState: SignUpViewModel.SignUpResultUiState,
-    formState: SignUpState,
-    onAlertDialogDismiss: () -> Unit,
+    signUpUiState: SignUpUiState,
     onPhotoSelected: (uri: Uri) -> Unit,
     onFirstNameChanged: (firstName: String) -> Unit,
     onLastNameChanged: (lastName: String) -> Unit,
@@ -114,33 +128,6 @@ private fun SignUpScreen(
     signInClicked: () -> Unit,
 ) {
     val context = LocalContext.current
-
-    if (signUpResultUiState is SignUpViewModel.SignUpResultUiState.Error) {
-        val errorMessageRes = when (signUpResultUiState) {
-            SignUpViewModel.SignUpResultUiState.Error.UserWithUsernameAlreadyExists ->
-                R.string.error_message_sign_up_user_with_username_already_exists
-
-            SignUpViewModel.SignUpResultUiState.Error.Generic ->
-                R.string.common_generic_error_message
-        }
-
-        AlertDialog(
-            onDismissRequest = onAlertDialogDismiss,
-            confirmButton = {
-                TextButton(
-                    onClick = onAlertDialogDismiss
-                ) {
-                    Text(text = context.getString(R.string.common_ok))
-                }
-            },
-            title = {
-                Text(text = context.getString(R.string.common_generic_error_title))
-            },
-            text = {
-                Text(text = context.getString(errorMessageRes))
-            }
-        )
-    }
 
     Column(
         modifier = modifier
@@ -184,8 +171,8 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "First name",
-                value = formState.firstName,
-                errorMessage = formState.firstNameError?.let {
+                value = signUpUiState.firstName,
+                errorMessage = signUpUiState.firstNameError?.let {
                     context.getString(it, "First name")
                 },
                 onInputChange = onFirstNameChanged::invoke
@@ -195,8 +182,8 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "Last name",
-                value = formState.lastName,
-                errorMessage = formState.lastNameError?.let {
+                value = signUpUiState.lastName,
+                errorMessage = signUpUiState.lastNameError?.let {
                     context.getString(it, "Last name")
                 },
                 onInputChange = onLastNameChanged::invoke
@@ -206,9 +193,9 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "E-mail",
-                value = formState.email,
+                value = signUpUiState.email,
                 keyboardType = KeyboardType.Email,
-                errorMessage = formState.emailError?.let {
+                errorMessage = signUpUiState.emailError?.let {
                     context.getString(it, "Email")
                 },
                 onInputChange = onEmailChanged::invoke
@@ -230,9 +217,9 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "Password",
-                value = formState.password,
+                value = signUpUiState.password,
                 extraText = extraText,
-                errorMessage = formState.passwordError?.let {
+                errorMessage = signUpUiState.passwordError?.let {
                     context.getString(it)
                 },
                 keyboardType = KeyboardType.Password
@@ -245,9 +232,9 @@ private fun SignUpScreen(
 
             SecondaryTextField(
                 label = "Password confirmation",
-                value = formState.passwordConfirmation,
+                value = signUpUiState.passwordConfirmation,
                 extraText = extraText,
-                errorMessage = formState.passwordError?.let {
+                errorMessage = signUpUiState.passwordError?.let {
                     context.getString(it)
                 },
                 imeAction = ImeAction.Done,
@@ -262,7 +249,7 @@ private fun SignUpScreen(
             ChatPrimaryButton(
                 title = "Sign Up",
                 modifier = Modifier.fillMaxWidth(),
-                isLoading = signUpResultUiState is SignUpViewModel.SignUpResultUiState.Loading,
+                isLoading = signUpUiState.isLoading,
                 onClick = signUpClicked::invoke
             )
 
@@ -318,9 +305,7 @@ fun PreviewSignInScreen() {
         Surface {
             SignUpScreen(
                 modifier = Modifier,
-                signUpResultUiState = SignUpViewModel.SignUpResultUiState.Success,
-                formState = SignUpState(),
-                {},
+                signUpUiState = SignUpUiState(),
                 {},
                 {},
                 {},

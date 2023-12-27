@@ -1,5 +1,6 @@
 package com.example.chatapp.data.util
 
+import com.example.chatapp.data.extension.errorMapping
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -16,6 +17,6 @@ suspend fun <T> getFlowResult(get: suspend () -> T): Flow<ResultStatus<T>> {
         val result = get()
         emit(ResultStatus.Success(result))
     }.catch {
-        emit(ResultStatus.Error(it))
+        emit(ResultStatus.Error(it.errorMapping()))
     }
 }

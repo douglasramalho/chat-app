@@ -19,9 +19,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,7 +40,6 @@ import com.example.chatapp.ui.component.ChatPrimaryButton
 import com.example.chatapp.ui.component.PrimaryChatTextField
 import com.example.chatapp.ui.theme.BackgroundGradient
 import com.example.chatapp.ui.theme.ChatAppTheme
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SignInRoute(
@@ -49,21 +48,38 @@ fun SignInRoute(
     navigateWhenAuthorized: () -> Unit,
     navigateWhenSignUpClicked: () -> Unit
 ) {
-    val signInResultUiState by viewModel.signInResultUiState.collectAsStateWithLifecycle()
-    val state = viewModel.formState
+    val uiState by viewModel.signInUiState.collectAsStateWithLifecycle()
 
-    val context = LocalContext.current
-    LaunchedEffect(viewModel, context) {
-        viewModel.navigateWhenSigningSuccessfully.collectLatest {
-            navigateWhenAuthorized()
+    val currentNavigateWhenAuthorized by rememberUpdatedState(navigateWhenAuthorized)
+    LaunchedEffect(uiState) {
+        if (uiState.isLoggedIn) {
+            currentNavigateWhenAuthorized()
         }
+    }
+
+    uiState.errorMessageStringResId?.let { errorMessageStringResId ->
+        val context = LocalContext.current
+        AlertDialog(
+            onDismissRequest = { viewModel.errorMessageShown() },
+            confirmButton = {
+                TextButton(
+                    onClick = { viewModel.errorMessageShown() }
+                ) {
+                    Text(text = context.getString(R.string.common_ok))
+                }
+            },
+            title = {
+                Text(text = context.getString(R.string.common_generic_error_title))
+            },
+            text = {
+                Text(text = context.getString(errorMessageStringResId))
+            }
+        )
     }
 
     SignInScreen(
         modifier = modifier,
-        signInResultUiState = signInResultUiState,
-        formState = state,
-        onAlertDialogDismiss = { viewModel.resetSignInResultUiState() },
+        signInUiState = uiState,
         onEmailChanged = {
             viewModel.onEvent(SignInUiEvent.UsernameChanged(it))
         },
@@ -82,42 +98,13 @@ fun SignInRoute(
 @Composable
 private fun SignInScreen(
     modifier: Modifier,
-    signInResultUiState: SignInViewModel.SignInResultUiState,
-    formState: SignInState,
-    onAlertDialogDismiss: () -> Unit,
+    signInUiState: SignInUiState,
     onEmailChanged: (username: String) -> Unit,
     onPasswordChanged: (password: String) -> Unit,
     signInClicked: () -> Unit,
     signUpClicked: () -> Unit
 ) {
     val context = LocalContext.current
-
-    if (signInResultUiState is SignInViewModel.SignInResultUiState.Error) {
-        val errorMessageRes = when (signInResultUiState) {
-            SignInViewModel.SignInResultUiState.Error.InvalidUsernameOrPassword ->
-                R.string.error_message_sign_in_invalid_username_or_password
-
-            SignInViewModel.SignInResultUiState.Error.Generic ->
-                R.string.common_generic_error_message
-        }
-
-        AlertDialog(
-            onDismissRequest = onAlertDialogDismiss,
-            confirmButton = {
-                TextButton(
-                    onClick = onAlertDialogDismiss
-                ) {
-                    Text(text = context.getString(R.string.common_ok))
-                }
-            },
-            title = {
-                Text(text = context.getString(R.string.common_generic_error_title))
-            },
-            text = {
-                Text(text = context.getString(errorMessageRes))
-            }
-        )
-    }
 
     Column(
         modifier = modifier
@@ -137,10 +124,10 @@ private fun SignInScreen(
         Spacer(modifier = Modifier.height(78.dp))
 
         PrimaryChatTextField(
-            value = formState.email,
+            value = signInUiState.email,
             leftIcon = R.drawable.ic_envelope,
             placeholder = "E-mail",
-            errorMessage = formState.emailError?.let { context.getString(it, "E-mail") },
+            errorMessage = signInUiState.emailError?.let { context.getString(it, "E-mail") },
             keyboardType = KeyboardType.Email,
             onInputChange = onEmailChanged::invoke
         )
@@ -148,10 +135,10 @@ private fun SignInScreen(
         Spacer(modifier = Modifier.height(16.dp))
 
         PrimaryChatTextField(
-            value = formState.password,
+            value = signInUiState.password,
             leftIcon = R.drawable.ic_lock,
             placeholder = "Password",
-            errorMessage = formState.passwordError?.let { context.getString(it, "Password") },
+            errorMessage = signInUiState.passwordError?.let { context.getString(it, "Password") },
             imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Password,
             onInputChange = onPasswordChanged::invoke
@@ -162,7 +149,7 @@ private fun SignInScreen(
         ChatPrimaryButton(
             title = "Sign In",
             modifier = Modifier.fillMaxWidth(),
-            isLoading = signInResultUiState is SignInViewModel.SignInResultUiState.Loading
+            isLoading = signInUiState.isLoading
         ) {
             signInClicked()
         }
@@ -223,13 +210,11 @@ fun PreviewSignInScreen() {
         Surface {
             SignInScreen(
                 modifier = Modifier,
-                signInResultUiState = SignInViewModel.SignInResultUiState.Success,
-                formState = SignInState(),
+                signInUiState = SignInUiState(),
                 {},
                 {},
                 {},
                 {},
-                {}
             )
         }
     }

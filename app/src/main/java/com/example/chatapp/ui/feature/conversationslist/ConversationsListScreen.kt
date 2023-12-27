@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.feature.conversationslist
 
+import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -13,6 +14,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.chatapp.MainActivity
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember
 import com.example.chatapp.model.User
@@ -33,8 +36,11 @@ import com.example.chatapp.ui.theme.Grey1
 
 @Composable
 fun ConversationsListRoute(
+    context: Context = LocalContext.current,
     viewModel: ConversationsListViewModel = hiltViewModel(),
-    chatSocketViewModel: ChatSocketViewModel = hiltViewModel(),
+    chatSocketViewModel: ChatSocketViewModel = hiltViewModel(
+        viewModelStoreOwner = context as MainActivity
+    ),
     navigateWhenConversationItemClicked: (receiverId: String) -> Unit,
 ) {
 
@@ -42,17 +48,7 @@ fun ConversationsListRoute(
     DisposableEffect(key1 = lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
-                chatSocketViewModel.openSocketConnection(
-                    onConversationsList = {
-                        viewModel.getConversationsList()
-                    }
-                )
-
                 viewModel.getConversationsList()
-            }
-
-            if (event == Lifecycle.Event.ON_PAUSE) {
-                chatSocketViewModel.closeSocketConnection()
             }
         }
 
@@ -64,7 +60,12 @@ fun ConversationsListRoute(
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val conversationState by chatSocketViewModel.conversationState.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUserStateFlow.collectAsStateWithLifecycle()
+
+    if (conversationState.hasUnreadMessages) {
+        viewModel.getConversationsList()
+    }
 
     ConversationsListScreen(
         currentUser = currentUser,

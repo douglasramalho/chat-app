@@ -1,10 +1,8 @@
 package com.example.chatapp.ui.feature.signup
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.chatapp.R
 import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
@@ -14,13 +12,13 @@ import com.example.chatapp.mediastorage.MediaStorageHelper
 import com.example.chatapp.model.AppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.UUID
 import javax.inject.Inject
@@ -34,66 +32,56 @@ class SignUpViewModel @Inject constructor(
     private val validatePasswordFieldUseCase: ValidatePasswordFieldUseCase,
 ) : ViewModel() {
 
-    var formState by mutableStateOf(SignUpState())
-
-    private val _signUpResultUiState =
-        MutableStateFlow<SignUpResultUiState>(SignUpResultUiState.Success)
-    val signUpResultUiState = _signUpResultUiState.asStateFlow()
-
-    private val _navigateAfterSigningUpSuccessfully = Channel<Unit>()
-    val navigateAfterSigningUpSuccessfully = _navigateAfterSigningUpSuccessfully.receiveAsFlow()
-
-    init {
-        authenticate()
-    }
+    private val _signUpUiState = MutableStateFlow(SignUpUiState())
+    val signUpUiState = _signUpUiState.asStateFlow()
 
     fun onEvent(event: SignUpEvent) {
         when (event) {
-            is SignUpEvent.FirstNameChanged -> {
-                formState = formState.copy(firstName = event.value)
+            is SignUpEvent.FirstNameChanged -> _signUpUiState.update {
+                it.copy(firstName = event.value)
             }
 
-            is SignUpEvent.LastNameChanged -> {
-                formState = formState.copy(lastName = event.value)
+            is SignUpEvent.LastNameChanged -> _signUpUiState.update {
+                it.copy(lastName = event.value)
             }
 
-            is SignUpEvent.EmailChanged -> {
-                formState = formState.copy(email = event.value)
+            is SignUpEvent.EmailChanged -> _signUpUiState.update {
+                it.copy(email = event.value)
             }
 
-            is SignUpEvent.PasswordChanged -> {
-                formState = formState.copy(password = event.value)
+            is SignUpEvent.PasswordChanged -> _signUpUiState.update {
+                it.copy(password = event.value)
             }
 
-            is SignUpEvent.PasswordConfirmationChanged -> {
-                formState = formState.copy(passwordConfirmation = event.value)
+            is SignUpEvent.PasswordConfirmationChanged -> _signUpUiState.update {
+                it.copy(passwordConfirmation = event.value)
             }
 
-            is SignUpEvent.ProfilePhotoUriChanged -> {
-                formState = formState.copy(profilePhotoUri = event.value)
+            is SignUpEvent.ProfilePhotoUriChanged -> _signUpUiState.update {
+                it.copy(profilePhotoUri = event.value)
             }
 
-            SignUpEvent.Submit -> {
-                if (isFormValid()) {
-                    signUp()
-                }
+            SignUpEvent.Submit -> if (isFormValid()) {
+                signUp()
             }
         }
     }
 
     private fun isFormValid(): Boolean {
-        val firstNameValidationResult = validateEmptyFieldUseCase(formState.firstName)
-        formState = formState.copy(firstNameError = firstNameValidationResult.errorMessage)
-
-        val lastNameValidationResult = validateEmptyFieldUseCase(formState.lastName)
-        formState = formState.copy(lastNameError = lastNameValidationResult.errorMessage)
-
-        val emailValidationResult = validateEmailFieldUseCase(formState.email)
-        formState = formState.copy(emailError = emailValidationResult.errorMessage)
-
+        val firstNameValidationResult = validateEmptyFieldUseCase(_signUpUiState.value.firstName)
+        val lastNameValidationResult = validateEmptyFieldUseCase(_signUpUiState.value.lastName)
+        val emailValidationResult = validateEmailFieldUseCase(_signUpUiState.value.email)
         val passwordValidationResult =
-            validatePasswordFieldUseCase(formState.password, formState.passwordConfirmation)
-        formState = formState.copy(passwordError = passwordValidationResult.errorMessage)
+            validatePasswordFieldUseCase(_signUpUiState.value.password, _signUpUiState.value.passwordConfirmation)
+
+        _signUpUiState.update {
+            it.copy(
+                firstNameError = firstNameValidationResult.errorMessage,
+                lastNameError = lastNameValidationResult.errorMessage,
+                emailError = emailValidationResult.errorMessage,
+                passwordError = passwordValidationResult.errorMessage,
+            )
+        }
 
         return listOf(
             firstNameValidationResult.successful,
@@ -106,62 +94,62 @@ class SignUpViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun signUp() {
         viewModelScope.launch {
-
             val profilePicturePath = "profilePicture/${UUID.randomUUID()}"
-            mediaStorageHelper.uploadImage(profilePicturePath, formState.profilePhotoUri)
+            mediaStorageHelper.uploadImage(profilePicturePath, _signUpUiState.value.profilePhotoUri)
                 .onStart {
-                    _signUpResultUiState.value = SignUpResultUiState.Loading
+                    _signUpUiState.update {
+                        it.copy(isLoggedIn = true)
+                    }
                 }
                 .flatMapLatest { resultStatus ->
-                    if (resultStatus is ResultStatus.Loading) {
-                        _signUpResultUiState.value = SignUpResultUiState.Loading
-                    }
-
-                    authRepository.signUp(
-                        username = formState.email,
-                        password = formState.password,
-                        firstName = formState.firstName,
-                        lastName = formState.lastName,
-                        profilePictureUrl = (resultStatus as? ResultStatus.Success)?.data
-                    )
+                    if (resultStatus !is ResultStatus.Loading) {
+                        authRepository.signUp(
+                            username = _signUpUiState.value.email,
+                            password = _signUpUiState.value.password,
+                            firstName = _signUpUiState.value.firstName,
+                            lastName = _signUpUiState.value.lastName,
+                            profilePictureUrl = (resultStatus as? ResultStatus.Success)?.data
+                        )
+                    } else flowOf(resultStatus)
+                }.flatMapLatest {
+                    if (it is ResultStatus.Success) {
+                        authRepository.signIn(
+                            username = signUpUiState.value.email,
+                            password = signUpUiState.value.password,
+                        )
+                    } else flowOf(it)
+                }.flatMapLatest {
+                    if (it is ResultStatus.Success) {
+                        authRepository.saveAccessToken(it.data as String)
+                        authRepository.authenticate()
+                    } else flowOf(it)
                 }.collect { resultStatus ->
-                    _signUpResultUiState.value = when (resultStatus) {
-                        ResultStatus.Loading -> SignUpResultUiState.Loading
-
-                        is ResultStatus.Success -> {
-                            _navigateAfterSigningUpSuccessfully.send(Unit)
-                            SignUpResultUiState.Success
-                        }
-
-                        is ResultStatus.Error -> {
-                            formState.profilePhotoUri?.let {
-                                viewModelScope.launch {
+                    _signUpUiState.update {
+                        it.copy(
+                            isLoading = resultStatus is ResultStatus.Loading,
+                            isLoggedIn = resultStatus is ResultStatus.Success,
+                            errorMessageStringResId = if (resultStatus is ResultStatus.Error) {
+                                it.profilePhotoUri?.let {
                                     mediaStorageHelper.removeImage(profilePicturePath).collect()
                                 }
-                            }
 
-                            when (resultStatus.exception) {
-                                AppError.ApiError.Conflict -> SignUpResultUiState.Error.UserWithUsernameAlreadyExists
-                                else -> SignUpResultUiState.Error.Generic
-                            }
-                        }
+                                val error = resultStatus.exception
+                                if (error is AppError.ApiError.Conflict) {
+                                    R.string.error_message_sign_up_user_with_username_already_exists
+                                } else R.string.common_generic_error_message
+                            } else null
+                        )
                     }
                 }
         }
     }
 
-    private fun authenticate() {
-        viewModelScope.launch {
-            authRepository.authenticate().collect { resultStatus ->
-                if (resultStatus is ResultStatus.Success) {
-                    _navigateAfterSigningUpSuccessfully.send(Unit)
-                }
-            }
+    fun errorMessageShown() {
+        _signUpUiState.update {
+            it.copy(
+                errorMessageStringResId = null
+            )
         }
-    }
-
-    fun resetSignUpResultUiState() {
-        _signUpResultUiState.value = SignUpResultUiState.Success
     }
 
     sealed interface SignUpResultUiState {
