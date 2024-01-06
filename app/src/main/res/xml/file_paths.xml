@@ -6,4 +6,8 @@
     <cache-path
         name="app_images"
         path="images/" />
+
+    <cache-path
+        name="cached_file"
+        path="." />
 </paths>

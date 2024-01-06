@@ -135,44 +135,59 @@ fun ConversationScreen(
             }
         }
     ) {
-        Column {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(bottom = 4.dp)
-                    .weight(1f),
-                contentPadding = PaddingValues(16.dp),
-                reverseLayout = true,
-                verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom)
-            ) {
-                itemsIndexed(messages) { index, item ->
-                    val previousMessage = if (index > 0) {
-                        messages[index - 1]
-                    } else null
+        ConversationSection(
+            messages = conversationState.messages,
+            messageText = messageText,
+            onMessageChanged = onMessageChanged,
+            onSendMessage = onSendMessage,
+        )
+    }
+}
 
-                    ChatMessageItem(
-                        message = item,
-                        previousMessage = previousMessage,
-                    )
+@Composable
+fun ConversationSection(
+    messages: List<Message>,
+    messageText: String,
+    onMessageChanged: (message: String) -> Unit,
+    onSendMessage: () -> Unit,
+) {
+    Column {
+        LazyColumn(
+            modifier = Modifier
+                .padding(bottom = 4.dp)
+                .weight(1f),
+            contentPadding = PaddingValues(16.dp),
+            reverseLayout = true,
+            verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.Bottom)
+        ) {
+            itemsIndexed(messages) { index, item ->
+                val previousMessage = if (index > 0) {
+                    messages[index - 1]
+                } else null
 
-                    if (index < messages.lastIndex && item.isOwnMessage && !messages[index + 1].isOwnMessage) {
-                        Spacer(modifier = Modifier.height(50.dp))
+                ChatMessageItem(
+                    message = item,
+                    previousMessage = previousMessage,
+                )
 
-                    }
+                if (index < messages.lastIndex && item.isOwnMessage && !messages[index + 1].isOwnMessage) {
+                    Spacer(modifier = Modifier.height(50.dp))
 
-                    if (index < messages.lastIndex && !item.isOwnMessage && messages[index + 1].isOwnMessage) {
-                        Spacer(modifier = Modifier.height(50.dp))
-                    }
+                }
+
+                if (index < messages.lastIndex && !item.isOwnMessage && messages[index + 1].isOwnMessage) {
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
             }
-
-            MessageTextField(
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                placeholder = "Type a message",
-                value = messageText,
-                onInputChange = onMessageChanged,
-                onSendClicked = onSendMessage
-            )
         }
+
+        MessageTextField(
+            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
+            placeholder = "Type a message",
+            value = messageText,
+            onInputChange = onMessageChanged,
+            onSendClicked = onSendMessage
+        )
     }
 }
 

@@ -2,15 +2,13 @@ package com.example.chatapp.navigation
 
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.remember
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.chatapp.ui.ChatSocketViewModel
+import com.example.chatapp.ui.ChatAppState
 import com.example.chatapp.ui.feature.conversation.ConversationRoute
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListRoute
 
@@ -22,6 +20,7 @@ fun NavController.navigateToChats(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.chatsNavGraph(
+    appState: ChatAppState,
     navController: NavHostController
 ) {
     navigation(
@@ -30,6 +29,7 @@ fun NavGraphBuilder.chatsNavGraph(
     ) {
         composable(CHATS_DESTINATION) {
             ConversationsListRoute(
+                windowSizeClass = appState.windowSizeClass,
                 navigateWhenConversationItemClicked = { receiverId ->
                     navController.navigate("conversation/$receiverId")
                 }

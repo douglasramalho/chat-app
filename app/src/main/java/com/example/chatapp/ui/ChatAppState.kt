@@ -1,15 +1,16 @@
 package com.example.chatapp.ui
 
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.navigation.NavDestination
-import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
-import com.example.chatapp.model.User
 import com.example.chatapp.navigation.CHATS_DESTINATION
 import com.example.chatapp.navigation.PROFILE_DESTINATION
 import com.example.chatapp.navigation.TopLevelDestination
@@ -19,15 +20,23 @@ import com.example.chatapp.navigation.navigateToUsers
 
 @Composable
 fun rememberChatAppState(
+    windowSizeClass: WindowSizeClass,
     navController: NavHostController = rememberNavController(),
 ): ChatAppState {
-    return remember(navController) {
-        ChatAppState(navController)
+    return remember(
+        navController,
+        windowSizeClass,
+    ) {
+        ChatAppState(
+            windowSizeClass,
+            navController
+        )
     }
 }
 
 @Stable
 class ChatAppState(
+    val windowSizeClass: WindowSizeClass,
     val navController: NavHostController,
 ) {
     val currentDestination: NavDestination?
@@ -40,6 +49,12 @@ class ChatAppState(
             PROFILE_DESTINATION -> TopLevelDestination.PROFILE
             else -> null
         }
+
+    val shouldShowBottomBar: Boolean
+        get() = windowSizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+
+    val shouldShowNavRail: Boolean
+        get() = !shouldShowBottomBar
 
     val topLevelDestinations = TopLevelDestination.entries
 
@@ -69,3 +84,8 @@ class ChatAppState(
         }
     }
 }
+
+fun NavDestination?.isTopLevelInHierarchy(destination: TopLevelDestination) =
+    this?.hierarchy?.any {
+        it.route?.contains(destination.name, true) ?: false
+    } ?: false

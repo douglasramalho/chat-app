@@ -4,29 +4,26 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
 import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.domain.ValidatePasswordFieldUseCase
-import com.example.chatapp.mediastorage.MediaStorageHelper
 import com.example.chatapp.model.AppError
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.UUID
 import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val mediaStorageHelper: MediaStorageHelper,
+    private val userRepository: UserRepository,
     private val validateEmptyFieldUseCase: ValidateEmptyFieldUseCase,
     private val validateEmailFieldUseCase: ValidateEmailFieldUseCase,
     private val validatePasswordFieldUseCase: ValidatePasswordFieldUseCase,
@@ -57,8 +54,8 @@ class SignUpViewModel @Inject constructor(
                 it.copy(passwordConfirmation = event.value)
             }
 
-            is SignUpEvent.ProfilePhotoUriChanged -> _signUpUiState.update {
-                it.copy(profilePhotoUri = event.value)
+            is SignUpEvent.ProfilePhotoPathChanged -> _signUpUiState.update {
+                it.copy(profilePhotoPath = event.value)
             }
 
             SignUpEvent.Submit -> if (isFormValid()) {
@@ -72,7 +69,10 @@ class SignUpViewModel @Inject constructor(
         val lastNameValidationResult = validateEmptyFieldUseCase(_signUpUiState.value.lastName)
         val emailValidationResult = validateEmailFieldUseCase(_signUpUiState.value.email)
         val passwordValidationResult =
-            validatePasswordFieldUseCase(_signUpUiState.value.password, _signUpUiState.value.passwordConfirmation)
+            validatePasswordFieldUseCase(
+                _signUpUiState.value.password,
+                _signUpUiState.value.passwordConfirmation
+            )
 
         _signUpUiState.update {
             it.copy(
@@ -94,23 +94,18 @@ class SignUpViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun signUp() {
         viewModelScope.launch {
-            val profilePicturePath = "profilePicture/${UUID.randomUUID()}"
-            mediaStorageHelper.uploadImage(profilePicturePath, _signUpUiState.value.profilePhotoUri)
-                .onStart {
-                    _signUpUiState.update {
-                        it.copy(isLoggedIn = true)
-                    }
-                }
-                .flatMapLatest { resultStatus ->
-                    if (resultStatus !is ResultStatus.Loading) {
+            val filePath = _signUpUiState.value.profilePhotoPath
+            userRepository.uploadProfilePicture(filePath)
+                .flatMapLatest { imageResultStatus ->
+                    if (imageResultStatus is ResultStatus.Success) {
                         authRepository.signUp(
                             username = _signUpUiState.value.email,
                             password = _signUpUiState.value.password,
                             firstName = _signUpUiState.value.firstName,
                             lastName = _signUpUiState.value.lastName,
-                            profilePictureUrl = (resultStatus as? ResultStatus.Success)?.data
+                            profilePictureId = (imageResultStatus as? ResultStatus.Success)?.data?.id
                         )
-                    } else flowOf(resultStatus)
+                    } else flowOf(imageResultStatus)
                 }.flatMapLatest {
                     if (it is ResultStatus.Success) {
                         authRepository.signIn(
@@ -120,7 +115,6 @@ class SignUpViewModel @Inject constructor(
                     } else flowOf(it)
                 }.flatMapLatest {
                     if (it is ResultStatus.Success) {
-                        authRepository.saveAccessToken(it.data as String)
                         authRepository.authenticate()
                     } else flowOf(it)
                 }.collect { resultStatus ->
@@ -129,10 +123,6 @@ class SignUpViewModel @Inject constructor(
                             isLoading = resultStatus is ResultStatus.Loading,
                             isLoggedIn = resultStatus is ResultStatus.Success,
                             errorMessageStringResId = if (resultStatus is ResultStatus.Error) {
-                                it.profilePhotoUri?.let {
-                                    mediaStorageHelper.removeImage(profilePicturePath).collect()
-                                }
-
                                 val error = resultStatus.exception
                                 if (error is AppError.ApiError.Conflict) {
                                     R.string.error_message_sign_up_user_with_username_already_exists

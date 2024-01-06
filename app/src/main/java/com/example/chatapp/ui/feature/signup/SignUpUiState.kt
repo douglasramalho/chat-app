@@ -1,10 +1,9 @@
 package com.example.chatapp.ui.feature.signup
 
-import android.net.Uri
 import androidx.annotation.StringRes
 
 data class SignUpUiState(
-    val profilePhotoUri: Uri? = null,
+    val profilePhotoPath: String? = null,
     val firstName: String = "",
     @StringRes
     val firstNameError: Int? = null,

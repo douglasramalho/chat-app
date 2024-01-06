@@ -1,5 +1,7 @@
 package com.example.chatapp.ui.component
 
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -8,9 +10,8 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -21,18 +22,18 @@ import com.example.chatapp.navigation.TopLevelDestination
 import com.example.chatapp.ui.isTopLevelInHierarchy
 
 @Composable
-fun ChatNavigationBar(
+fun ChatNavigationRail(
     destinations: List<TopLevelDestination>,
     currentDestination: NavDestination?,
     onDestinationSelected: (destination: TopLevelDestination) -> Unit,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
 ) {
-    NavigationBar(
+    NavigationRail(
         modifier = modifier,
-        containerColor = MaterialTheme.colorScheme.surface,
-        tonalElevation = 0.dp
     ) {
-        destinations.forEach { destination ->
+        destinations.sortedByDescending {
+            it == TopLevelDestination.PLUS_BUTTON
+        }.forEach { destination ->
             if (destination == TopLevelDestination.PLUS_BUTTON) {
                 FloatingActionButton(
                     onClick = {
@@ -51,9 +52,12 @@ fun ChatNavigationBar(
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = destination.title)
                 }
+                
+                Spacer(modifier = Modifier.height(30.dp))
             } else {
                 val selected = currentDestination.isTopLevelInHierarchy(destination)
-                NavigationBarItem(
+
+                NavigationRailItem(
                     selected = selected,
                     onClick = {
                         onDestinationSelected(destination)
@@ -66,11 +70,7 @@ fun ChatNavigationBar(
                     },
                     label = {
                         Text(text = destination.title)
-                    },
-                    alwaysShowLabel = true,
-                    colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.surface,
-                    )
+                    }
                 )
             }
         }

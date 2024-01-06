@@ -4,6 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -27,6 +29,7 @@ class MainActivity : ComponentActivity() {
     private val chatSocketViewModel: ChatSocketViewModel by viewModels()
     private var uiState: MainViewModel.UiState by mutableStateOf(MainViewModel.UiState.Loading)
 
+    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -51,10 +54,8 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            CompositionLocalProvider {
-                ChatAppTheme {
-                    ChatApp()
-                }
+            ChatAppTheme {
+                ChatApp(windowSizeClass = calculateWindowSizeClass(activity = this))
             }
         }
     }

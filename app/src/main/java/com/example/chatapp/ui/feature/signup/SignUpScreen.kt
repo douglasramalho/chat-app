@@ -1,6 +1,5 @@
 package com.example.chatapp.ui.feature.signup
 
-import android.net.Uri
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -88,7 +87,7 @@ fun SignUpRoute(
         modifier = modifier,
         signUpUiState = signUpUiState,
         onPhotoSelected = {
-            viewModel.onEvent(SignUpEvent.ProfilePhotoUriChanged(it))
+            viewModel.onEvent(SignUpEvent.ProfilePhotoPathChanged(it))
         },
         onFirstNameChanged = {
             viewModel.onEvent(SignUpEvent.FirstNameChanged(it))
@@ -118,7 +117,7 @@ fun SignUpRoute(
 private fun SignUpScreen(
     modifier: Modifier,
     signUpUiState: SignUpUiState,
-    onPhotoSelected: (uri: Uri) -> Unit,
+    onPhotoSelected: (path: String?) -> Unit,
     onFirstNameChanged: (firstName: String) -> Unit,
     onLastNameChanged: (lastName: String) -> Unit,
     onEmailChanged: (email: String) -> Unit,

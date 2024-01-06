@@ -76,7 +76,6 @@ class SignInViewModel @Inject constructor(
                 password = _signInUiState.value.password
             ).flatMapLatest {
                 if (it is ResultStatus.Success) {
-                    authRepository.saveAccessToken(it.data)
                     authRepository.authenticate()
                 } else flowOf(it)
             }.collectLatest { resultStatus ->

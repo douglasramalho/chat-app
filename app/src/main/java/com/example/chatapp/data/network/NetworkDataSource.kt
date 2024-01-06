@@ -2,6 +2,7 @@ package com.example.chatapp.data.network
 
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
+import com.example.chatapp.data.network.response.ImageResponse
 import com.example.chatapp.data.network.response.PaginatedConversationResponse
 import com.example.chatapp.data.network.response.PaginatedMessageResponse
 import com.example.chatapp.data.network.response.TokenResponse
@@ -18,6 +19,8 @@ interface NetworkDataSource {
     suspend fun getConversations(): PaginatedConversationResponse
 
     suspend fun getMessages(receiverId: String): PaginatedMessageResponse
+
+    suspend fun uploadProfilePicture(filePath: String): ImageResponse
 
     suspend fun getUsers(): List<UserResponse>
 

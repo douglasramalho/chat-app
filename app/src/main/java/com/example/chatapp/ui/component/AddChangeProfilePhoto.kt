@@ -2,6 +2,7 @@ package com.example.chatapp.ui.component
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -29,7 +30,7 @@ import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ProfilePicture(
-    onPhotoSelected: (uri: Uri) -> Unit
+    onPhotoSelected: (path: String?) -> Unit
 ) {
     var hasImage by rememberSaveable {
         mutableStateOf(false)
@@ -43,8 +44,10 @@ fun ProfilePicture(
         mutableStateOf(false)
     }
 
+    val context = LocalContext.current
+
     val imagePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
+        contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
             hasImage = uri != null
             profilePictureUri = uri
@@ -55,14 +58,20 @@ fun ProfilePicture(
         contract = ActivityResultContracts.TakePicture(),
         onResult = { success ->
             hasImage = success
+
+            if (success) {
+                profilePictureUri?.let {
+                    val file = ChatAppFileProvider.createFile(context, it)
+                    val uri = Uri.fromFile(file)
+                    onPhotoSelected(uri.path)
+                }
+            }
         }
     )
 
     val text = profilePictureUri?.let {
         "Change profile photo"
     } ?: "Add profile photo"
-
-    val context = LocalContext.current
 
     Column(
         modifier = Modifier
@@ -72,7 +81,6 @@ fun ProfilePicture(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (hasImage && profilePictureUri != null) {
-            onPhotoSelected(profilePictureUri!!)
             AsyncImage(
                 model = profilePictureUri,
                 contentDescription = null,
@@ -103,7 +111,11 @@ fun ProfilePicture(
                 cameraLauncher.launch(uri)
             },
             uploadPhotoClick = {
-                imagePicker.launch("image/*")
+                imagePicker.launch(
+                    PickVisualMediaRequest(
+                        ActivityResultContracts.PickVisualMedia.ImageOnly
+                    )
+                )
             }
         )
     }

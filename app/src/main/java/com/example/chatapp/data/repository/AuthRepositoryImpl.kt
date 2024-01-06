@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.last
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -26,7 +27,7 @@ class AuthRepositoryImpl @Inject constructor(
         password: String,
         firstName: String,
         lastName: String,
-        profilePictureUrl: String?,
+        profilePictureId: String?,
     ): Flow<ResultStatus<Unit>> {
         return getFlowResult {
             networkDataSource.signUp(
@@ -35,7 +36,7 @@ class AuthRepositoryImpl @Inject constructor(
                     password = password,
                     firstName = firstName,
                     lastName = lastName,
-                    profilePictureUrl = profilePictureUrl,
+                    profilePictureId = profilePictureId,
                 )
             )
         }
@@ -51,10 +52,17 @@ class AuthRepositoryImpl @Inject constructor(
             )
 
             response.token
+        }.map {
+            if (it is ResultStatus.Success) {
+                val accessToken = it.data
+                saveAccessToken(accessToken)
+            }
+
+            it
         }
     }
 
-    override suspend fun saveAccessToken(accessToken: String) {
+    private suspend fun saveAccessToken(accessToken: String) {
         dataStorePreferencesDataSource.saveAccessToken(accessToken)
     }
 

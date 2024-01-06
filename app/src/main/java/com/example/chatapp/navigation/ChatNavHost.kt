@@ -70,6 +70,7 @@ fun ChatNavHost(
         }
 
         chatsNavGraph(
+            appState = appState,
             navController = navController
         )
 
