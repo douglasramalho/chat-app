@@ -6,9 +6,7 @@ import com.example.chatapp.data.network.NetworkDataSource
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
 import com.example.chatapp.data.network.response.toModel
-import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.model.AppError
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 
@@ -18,9 +16,6 @@ class AuthRepositoryImpl @Inject constructor(
     private val dataStoreProtoDataSource: DataStoreProtoDataSource,
     private val dataStorePreferencesDataSource: DataStorePreferencesDataSource,
 ) : AuthRepository {
-
-    override val authenticateStatusFlow: MutableStateFlow<ResultStatus<Unit>>
-        get() = MutableStateFlow(ResultStatus.Loading)
 
     override suspend fun signUp(
         username: String,
@@ -57,12 +52,10 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getAndStoreUserInfo() {
         return if (!isAuthenticated()) {
-            authenticateStatusFlow.value = ResultStatus.Error(AppError.ApiError.Unauthorized)
             throw AppError.ApiError.Unauthorized
         } else {
             val userResponse = networkDataSource.authenticate()
             dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
-            authenticateStatusFlow.value = ResultStatus.Success(Unit)
         }
     }
 

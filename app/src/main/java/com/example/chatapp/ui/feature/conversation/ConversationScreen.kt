@@ -56,6 +56,7 @@ fun ConversationRoute(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 receiverId?.let {
+                    chatSocketViewModel.connectToSocket()
                     chatSocketViewModel.onConversation(it)
                 }
             }

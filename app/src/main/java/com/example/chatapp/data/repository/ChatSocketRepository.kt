@@ -8,7 +8,9 @@ interface ChatSocketRepository {
 
     val messagesFlow: MutableStateFlow<Message?>
 
-    suspend fun openSession(openSocketCallback: (isOpen: Boolean) -> Unit): Flow<SocketResult>
+    suspend fun openSession()
+
+    suspend fun observeSocketResult(): Flow<SocketResult>
 
     suspend fun closeSession()
 

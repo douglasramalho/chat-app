@@ -38,9 +38,6 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.onEach {
-                    if (it is MainViewModel.UiState.Success) {
-                        chatSocketViewModel.openSocketConnection()
-                    }
                     uiState = it
                 }.collect()
             }

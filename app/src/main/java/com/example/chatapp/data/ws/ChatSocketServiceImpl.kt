@@ -1,5 +1,6 @@
 package com.example.chatapp.data.ws
 
+import android.util.Log
 import com.example.chatapp.data.network.di.SocketHttpClient
 import com.example.chatapp.data.network.request.MessageRequest
 import com.example.chatapp.data.network.response.ActiveStatusResponse
@@ -35,17 +36,13 @@ class ChatSocketServiceImpl @Inject constructor(
 
     private var socket: WebSocketSession? = null
 
-    override suspend fun initSession(userId: String): Result<Unit> {
-        return try {
+    override suspend fun openSession(userId: String) {
+        try {
             if (userId.isNotEmpty() && (socket == null || socket?.isActive == false)) {
                 socket = client.webSocketSession("ws://192.168.1.68:8080/chat/$userId")
-                if (socket?.isActive == true) {
-                    Result.success(Unit)
-                } else Result.failure(Throwable("Couldn't establish a connection."))
-            } else Result.success(Unit)
-
+            }
         } catch (e: Exception) {
-            Result.failure(e)
+            e.printStackTrace()
         }
     }
 
@@ -62,17 +59,20 @@ class ChatSocketServiceImpl @Inject constructor(
 
                     when (action) {
                         "newMessage" -> {
-                            val messageResponse = Json.decodeFromString<MessageResponse>(jsonResponse)
+                            val messageResponse =
+                                Json.decodeFromString<MessageResponse>(jsonResponse)
                             SocketSessionResult.MessageReceived(messageResponse)
                         }
 
                         "unreadStatus" -> {
-                            val unreadStatusResponse = Json.decodeFromString<UnreadStatusResponse>(jsonResponse)
+                            val unreadStatusResponse =
+                                Json.decodeFromString<UnreadStatusResponse>(jsonResponse)
                             SocketSessionResult.UnreadStatus(unreadStatusResponse)
                         }
 
                         "activeUserIds" -> {
-                            val onlineStatusResponse = Json.decodeFromString<ActiveStatusResponse>(jsonResponse)
+                            val onlineStatusResponse =
+                                Json.decodeFromString<ActiveStatusResponse>(jsonResponse)
                             SocketSessionResult.ActiveStatus(onlineStatusResponse)
                         }
 

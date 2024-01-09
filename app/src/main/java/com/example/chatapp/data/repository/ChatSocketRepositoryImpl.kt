@@ -7,7 +7,6 @@ import com.example.chatapp.data.ws.SocketSessionResult
 import com.example.chatapp.model.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -32,34 +31,32 @@ class ChatSocketRepositoryImpl @Inject constructor(
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
-    override suspend fun openSession(openSocketCallback: (isOpen: Boolean) -> Unit): Flow<SocketResult> {
+    override suspend fun openSession() {
+        val currentUser = dataStoreProtoDataSource.currentUser.first()
+        chatSocketService.openSession(currentUser.id)
+    }
+
+    override suspend fun observeSocketResult(): Flow<SocketResult> {
         val currentUser = dataStoreProtoDataSource.currentUser.first()
 
-        val socketResult = chatSocketService.initSession(currentUser.id)
-        return if (socketResult.isSuccess) {
-            openSocketCallback(true)
-            chatSocketService.observeSocketResultFlow()
-                .map {
-                    when (it) {
-                        is SocketSessionResult.MessageReceived ->
-                            SocketResult.NewMessage(it.message.toModel(currentUser.id))
+        return chatSocketService.observeSocketResultFlow()
+            .map {
+                when (it) {
+                    is SocketSessionResult.MessageReceived ->
+                        SocketResult.NewMessage(it.message.toModel(currentUser.id))
 
-                        is SocketSessionResult.UnreadStatus -> {
-                            SocketResult.UnreadStatus(
-                                hasConversationsUnread = it.unreadStatusResponse.hasConversationsUnread,
-                                unreadMessagesCount = it.unreadStatusResponse.unreadMessagesCount,
-                            )
-                        }
-
-                        is SocketSessionResult.ActiveStatus -> SocketResult.ActiveStatus(it.activeStatusResponse.activeUserIds)
-
-                        SocketSessionResult.EmptyResult -> SocketResult.Empty
+                    is SocketSessionResult.UnreadStatus -> {
+                        SocketResult.UnreadStatus(
+                            hasConversationsUnread = it.unreadStatusResponse.hasConversationsUnread,
+                            unreadMessagesCount = it.unreadStatusResponse.unreadMessagesCount,
+                        )
                     }
+
+                    is SocketSessionResult.ActiveStatus -> SocketResult.ActiveStatus(it.activeStatusResponse.activeUserIds)
+
+                    SocketSessionResult.EmptyResult -> SocketResult.Empty
                 }
-        } else {
-            openSocketCallback(false)
-            emptyFlow()
-        }
+            }
     }
 
     override suspend fun closeSession() {

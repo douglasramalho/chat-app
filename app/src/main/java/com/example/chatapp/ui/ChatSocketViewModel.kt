@@ -14,8 +14,6 @@ import com.example.chatapp.ui.feature.conversation.ConversationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,58 +31,54 @@ class ChatSocketViewModel @Inject constructor(
     private val _conversationState = MutableStateFlow(ConversationState())
     val conversationState = _conversationState.asStateFlow()
 
-    private var isSessionOpen = false
-
-    fun openSocketConnection() {
+    fun connectToSocket() {
         viewModelScope.launch {
-            chatSocketRepository.openSession { isOpen ->
-                this@ChatSocketViewModel.isSessionOpen = isOpen
-            }.onEach { socketResult ->
-                when (socketResult) {
-                    is SocketResult.NewMessage -> {
-                        val message = socketResult.message
-                        val newList = conversationState.value.messages.toMutableList().apply {
-                            add(0, message)
+            chatSocketRepository.openSession()
+            chatSocketRepository.observeSocketResult()
+                .collect { socketResult ->
+                    when (socketResult) {
+                        is SocketResult.NewMessage -> {
+                            val message = socketResult.message
+                            val newList = conversationState.value.messages.toMutableList().apply {
+                                add(0, message)
+                            }
+
+                            _conversationState.update {
+                                it.copy(messages = newList)
+                            }
                         }
 
-                        _conversationState.update {
-                            it.copy(messages = newList)
+                        is SocketResult.UnreadStatus -> {
+                            _conversationState.update {
+                                it.copy(hasUnreadMessages = socketResult.hasConversationsUnread)
+                            }
                         }
-                    }
 
-                    is SocketResult.UnreadStatus -> {
-                        _conversationState.update {
-                            it.copy(hasUnreadMessages = socketResult.hasConversationsUnread)
-                        }
-                    }
-
-                    is SocketResult.ActiveStatus -> {
-                        _conversationState.value.receiver?.let { receiver ->
-                            _conversationState.value = _conversationState.value.copy(
-                                isOnline = socketResult.activeUserIds.contains(
-                                    receiver.id.toInt()
+                        is SocketResult.ActiveStatus -> {
+                            _conversationState.value.receiver?.let { receiver ->
+                                _conversationState.value = _conversationState.value.copy(
+                                    isOnline = socketResult.activeUserIds.contains(
+                                        receiver.id.toInt()
+                                    )
                                 )
-                            )
+                            }
                         }
-                    }
 
-                    SocketResult.Empty -> {
-                    }
+                        SocketResult.Empty -> {
+                        }
 
-                    SocketResult.Error -> {
+                        SocketResult.Error -> {
 
+                        }
                     }
                 }
-            }.launchIn(viewModelScope)
         }
     }
 
     fun onConversation(receiverId: String) {
-        if (isSessionOpen) {
-            getOnlineStatus()
-            getReceiverUser(receiverId)
-            getMessages(receiverId)
-        }
+        getOnlineStatus()
+        getReceiverUser(receiverId)
+        getMessages(receiverId)
     }
 
     private fun getReceiverUser(receiverId: String) {
@@ -170,7 +164,6 @@ class ChatSocketViewModel @Inject constructor(
     }
 
     fun closeSocketConnection() {
-        this.isSessionOpen = false
         viewModelScope.launch {
             chatSocketRepository.closeSession()
         }
