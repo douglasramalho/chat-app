@@ -2,7 +2,8 @@ package com.example.chatapp.ui.feature.profile
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.chatapp.data.repository.AuthRepository
+import com.example.chatapp.data.util.ResultStatus
+import com.example.chatapp.domain.LogoutUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -11,7 +12,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
+    private val logoutUseCase: LogoutUseCase,
 ) : ViewModel() {
 
     private val logoutChannel = Channel<Unit>()
@@ -19,8 +20,11 @@ class ProfileViewModel @Inject constructor(
 
     fun logout() {
         viewModelScope.launch {
-            authRepository.logout()
-            logoutChannel.send(Unit)
+            logoutUseCase().collect {
+                if (it is ResultStatus.Success) {
+                    logoutChannel.send(Unit)
+                }
+            }
         }
     }
 }

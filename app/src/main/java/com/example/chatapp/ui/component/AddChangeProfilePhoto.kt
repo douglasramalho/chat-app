@@ -51,6 +51,11 @@ fun ProfilePicture(
         onResult = { uri ->
             hasImage = uri != null
             profilePictureUri = uri
+            uri?.let {
+                val file = ChatAppFileProvider.createFile(context, it)
+                val fileUri = Uri.fromFile(file)
+                onPhotoSelected(fileUri.path)
+            }
         }
     )
 

@@ -8,7 +8,6 @@ import com.example.chatapp.data.util.getFlowResult
 import com.example.chatapp.model.Image
 import com.example.chatapp.model.User
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
@@ -30,12 +29,8 @@ class UserRepositoryImpl @Inject constructor(
             } else null
         }
 
-    override suspend fun uploadProfilePicture(filePath: String?): Flow<ResultStatus<Image>> {
-        return filePath?.let { path ->
-            getFlowResult {
-                networkDataSource.uploadProfilePicture(path).toModel()
-            }
-        } ?: emptyFlow()
+    override suspend fun uploadProfilePicture(filePath: String): Image {
+        return networkDataSource.uploadProfilePicture(filePath).toModel()
     }
 
     override suspend fun getUsers(): Flow<ResultStatus<List<User>>> {

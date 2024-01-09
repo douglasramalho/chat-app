@@ -7,20 +7,20 @@ import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
 import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.util.ResultStatus
-import com.example.chatapp.data.util.getFlowResult
 import com.example.chatapp.model.AppError
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource,
+    private val chatSocketRepository: ChatSocketRepository,
     private val dataStoreProtoDataSource: DataStoreProtoDataSource,
     private val dataStorePreferencesDataSource: DataStorePreferencesDataSource,
 ) : AuthRepository {
+
+    override val authenticateStatusFlow: MutableStateFlow<ResultStatus<Unit>>
+        get() = MutableStateFlow(ResultStatus.Loading)
 
     override suspend fun signUp(
         username: String,
@@ -28,61 +28,41 @@ class AuthRepositoryImpl @Inject constructor(
         firstName: String,
         lastName: String,
         profilePictureId: String?,
-    ): Flow<ResultStatus<Unit>> {
-        return getFlowResult {
-            networkDataSource.signUp(
-                request = CreateAccountRequest(
-                    username = username,
-                    password = password,
-                    firstName = firstName,
-                    lastName = lastName,
-                    profilePictureId = profilePictureId,
-                )
+    ) {
+        networkDataSource.signUp(
+            request = CreateAccountRequest(
+                username = username,
+                password = password,
+                firstName = firstName,
+                lastName = lastName,
+                profilePictureId = profilePictureId,
             )
-        }
+        )
     }
 
-    override suspend fun signIn(username: String, password: String): Flow<ResultStatus<String>> {
-        return getFlowResult {
-            val response = networkDataSource.signIn(
+    override suspend fun signIn(username: String, password: String) {
+        val tokenResponse = networkDataSource.signIn(
                 request = AuthRequest(
                     username = username,
                     password = password
                 )
-            )
+        )
 
-            response.token
-        }.map {
-            if (it is ResultStatus.Success) {
-                val accessToken = it.data
-                saveAccessToken(accessToken)
-            }
-
-            it
-        }
+        saveAccessToken(tokenResponse.token)
     }
 
     private suspend fun saveAccessToken(accessToken: String) {
         dataStorePreferencesDataSource.saveAccessToken(accessToken)
     }
 
-    override suspend fun authenticate(): Flow<ResultStatus<Unit>> {
+    override suspend fun getAndStoreUserInfo() {
         return if (!isAuthenticated()) {
-            flowOf(ResultStatus.Error(AppError.ApiError.Unauthorized))
+            authenticateStatusFlow.value = ResultStatus.Error(AppError.ApiError.Unauthorized)
+            throw AppError.ApiError.Unauthorized
         } else {
-            val authenticateResult = getFlowResult {
-                networkDataSource.authenticate()
-            }
-
-            when (val result = authenticateResult.last()) {
-                is ResultStatus.Success -> {
-                    val userResponse = result.data
-                    dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
-                    flowOf(ResultStatus.Success(Unit))
-                }
-
-                else -> flowOf(result as ResultStatus.Error)
-            }
+            val userResponse = networkDataSource.authenticate()
+            dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
+            authenticateStatusFlow.value = ResultStatus.Success(Unit)
         }
     }
 
@@ -93,5 +73,6 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun logout() {
         dataStoreProtoDataSource.clear()
         dataStorePreferencesDataSource.clear()
+        chatSocketRepository.closeSession()
     }
 }

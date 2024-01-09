@@ -3,25 +3,22 @@ package com.example.chatapp.ui.feature.signin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
-import com.example.chatapp.data.repository.AuthRepository
 import com.example.chatapp.data.util.ResultStatus
+import com.example.chatapp.domain.SignInUseCase
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.model.AppError
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SignInViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
+    private val signInUseCase: SignInUseCase,
     private val validateEmptyFieldUseCase: ValidateEmptyFieldUseCase,
     private val validateEmailFieldUseCase: ValidateEmailFieldUseCase,
 ) : ViewModel() {
@@ -68,17 +65,14 @@ class SignInViewModel @Inject constructor(
         ).all { it }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun signIn() {
         viewModelScope.launch {
-            authRepository.signIn(
-                username = _signInUiState.value.email,
-                password = _signInUiState.value.password
-            ).flatMapLatest {
-                if (it is ResultStatus.Success) {
-                    authRepository.authenticate()
-                } else flowOf(it)
-            }.collectLatest { resultStatus ->
+            signInUseCase(
+                SignInUseCase.Params(
+                    email = _signInUiState.value.email,
+                    password = _signInUiState.value.password
+                )
+            ).collectLatest { resultStatus ->
                 _signInUiState.update {
                     it.copy(
                         isLoading = resultStatus is ResultStatus.Loading,

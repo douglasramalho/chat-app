@@ -3,9 +3,10 @@ package com.example.chatapp.ui.feature.signup
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.chatapp.R
-import com.example.chatapp.data.repository.AuthRepository
-import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.data.util.ResultStatus
+import com.example.chatapp.domain.SignInUseCase
+import com.example.chatapp.domain.SignUpUseCase
+import com.example.chatapp.domain.UploadProfilePictureUseCase
 import com.example.chatapp.domain.ValidateEmailFieldUseCase
 import com.example.chatapp.domain.ValidateEmptyFieldUseCase
 import com.example.chatapp.domain.ValidatePasswordFieldUseCase
@@ -22,8 +23,9 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SignUpViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    private val userRepository: UserRepository,
+    private val uploadProfilePictureUseCase: UploadProfilePictureUseCase,
+    private val signUpUseCase: SignUpUseCase,
+    private val signInUseCase: SignInUseCase,
     private val validateEmptyFieldUseCase: ValidateEmptyFieldUseCase,
     private val validateEmailFieldUseCase: ValidateEmailFieldUseCase,
     private val validatePasswordFieldUseCase: ValidatePasswordFieldUseCase,
@@ -95,27 +97,27 @@ class SignUpViewModel @Inject constructor(
     private fun signUp() {
         viewModelScope.launch {
             val filePath = _signUpUiState.value.profilePhotoPath
-            userRepository.uploadProfilePicture(filePath)
+            uploadProfilePictureUseCase(filePath)
                 .flatMapLatest { imageResultStatus ->
-                    if (imageResultStatus is ResultStatus.Success) {
-                        authRepository.signUp(
-                            username = _signUpUiState.value.email,
-                            password = _signUpUiState.value.password,
-                            firstName = _signUpUiState.value.firstName,
-                            lastName = _signUpUiState.value.lastName,
-                            profilePictureId = (imageResultStatus as? ResultStatus.Success)?.data?.id
+                    if (imageResultStatus !is ResultStatus.Loading) {
+                        signUpUseCase(
+                            SignUpUseCase.Params(
+                                email = _signUpUiState.value.email,
+                                password = _signUpUiState.value.password,
+                                firstName = _signUpUiState.value.firstName,
+                                lastName = _signUpUiState.value.lastName,
+                                profilePictureId = (imageResultStatus as? ResultStatus.Success)?.data
+                            )
                         )
                     } else flowOf(imageResultStatus)
                 }.flatMapLatest {
                     if (it is ResultStatus.Success) {
-                        authRepository.signIn(
-                            username = signUpUiState.value.email,
-                            password = signUpUiState.value.password,
+                        signInUseCase(
+                            SignInUseCase.Params(
+                                email = signUpUiState.value.email,
+                                password = signUpUiState.value.password,
+                            )
                         )
-                    } else flowOf(it)
-                }.flatMapLatest {
-                    if (it is ResultStatus.Success) {
-                        authRepository.authenticate()
                     } else flowOf(it)
                 }.collect { resultStatus ->
                     _signUpUiState.update {

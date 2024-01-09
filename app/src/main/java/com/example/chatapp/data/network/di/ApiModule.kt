@@ -1,13 +1,19 @@
 package com.example.chatapp.data.network.di
 
+import android.content.Context
+import android.content.Intent
+import com.example.chatapp.MainActivity
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
+import com.example.chatapp.data.datastore.DataStoreProtoDataSource
 import com.example.chatapp.data.network.ChatApiService
 import com.example.chatapp.data.network.NetworkError
+import com.example.chatapp.data.ws.ChatSocketService
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.Android
@@ -64,12 +70,15 @@ object ApiModule {
     @Singleton
     @ApiHttpClient
     fun provideClient(
+        @ApplicationContext context: Context,
+        dataStoreProtoDataSource: DataStoreProtoDataSource,
         dataStorePreferencesDataSource: DataStorePreferencesDataSource,
+        chatSocketService: ChatSocketService,
     ): HttpClient {
         return HttpClient(Android) {
             expectSuccess = true
             HttpResponseValidator {
-                handleResponseExceptionWithRequest { exception, request ->
+                handleResponseExceptionWithRequest { exception, _ ->
                     val clientException = exception as? ClientRequestException
                         ?: return@handleResponseExceptionWithRequest
                     val exceptionResponse = clientException.response
@@ -77,6 +86,19 @@ object ApiModule {
                         HttpStatusCode.BadRequest -> NetworkError.BadRequest
                         HttpStatusCode.NotFound -> NetworkError.NotFound
                         HttpStatusCode.Conflict -> NetworkError.Conflict
+                        HttpStatusCode.Unauthorized -> {
+                            chatSocketService.closeSession()
+                            dataStoreProtoDataSource.clear()
+                            dataStorePreferencesDataSource.clear()
+
+                            context.startActivity(
+                                Intent(context, MainActivity::class.java).apply {
+                                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                                }
+                            )
+
+                            return@handleResponseExceptionWithRequest
+                        }
                         else -> NetworkError.Generic(
                             status.value,
                             exceptionResponse.bodyAsText()

@@ -9,7 +9,7 @@ interface UserRepository {
 
     val currentUser: Flow<User?>
 
-    suspend fun uploadProfilePicture(filePath: String?): Flow<ResultStatus<Image>>
+    suspend fun uploadProfilePicture(filePath: String): Image
 
     suspend fun getUsers(): Flow<ResultStatus<List<User>>>
 

@@ -37,11 +37,13 @@ class ChatSocketServiceImpl @Inject constructor(
 
     override suspend fun initSession(userId: String): Result<Unit> {
         return try {
-            socket = client.webSocketSession("ws://192.168.1.68:8080/chat/$userId")
+            if (userId.isNotEmpty() && (socket == null || socket?.isActive == false)) {
+                socket = client.webSocketSession("ws://192.168.1.68:8080/chat/$userId")
+                if (socket?.isActive == true) {
+                    Result.success(Unit)
+                } else Result.failure(Throwable("Couldn't establish a connection."))
+            } else Result.success(Unit)
 
-            if (socket?.isActive == true) {
-                Result.success(Unit)
-            } else Result.failure(Throwable("Couldn't establish a connection."))
         } catch (e: Exception) {
             Result.failure(e)
         }
