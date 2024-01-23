@@ -40,6 +40,7 @@ import com.example.chatapp.ui.component.ChatTopBar
 import com.example.chatapp.ui.component.MessageTextField
 import com.example.chatapp.ui.feature.conversation.component.ChatMessageItem
 import com.example.chatapp.ui.theme.ChatAppTheme
+import kotlinx.coroutines.delay
 
 @Composable
 fun ConversationRoute(
@@ -70,15 +71,16 @@ fun ConversationRoute(
     }
 
     val state by chatSocketViewModel.conversationState.collectAsStateWithLifecycle()
+    val messages by chatSocketViewModel.messagesStateFlow.collectAsStateWithLifecycle()
     val messageText by chatSocketViewModel.messageTextState
 
-    val messages = state.messages
     messages.forEach {
         chatSocketViewModel.readMessage(it)
     }
 
     ConversationScreen(
         state,
+        messages,
         messageText,
         onNavigationClick,
         chatSocketViewModel::onMessageChange,
@@ -89,13 +91,13 @@ fun ConversationRoute(
 @Composable
 fun ConversationScreen(
     conversationState: ConversationState,
+    messages: List<Message>,
     messageText: String,
     onNavigationClick: () -> Unit,
     onMessageChanged: (message: String) -> Unit,
     onSendMessage: () -> Unit,
 ) {
     val receiver = conversationState.receiver
-    val messages = conversationState.messages
 
     ChatScaffold(
         topBar = {
@@ -137,7 +139,7 @@ fun ConversationScreen(
         }
     ) {
         ConversationSection(
-            messages = conversationState.messages,
+            messages = messages,
             messageText = messageText,
             onMessageChanged = onMessageChanged,
             onSendMessage = onSendMessage,
@@ -205,45 +207,46 @@ fun PreviewConversationScreen() {
                     "Motta",
                     null
                 ),
-                messages = listOf(
-                    Message(
-                        id = 1,
-                        senderId = 1,
-                        receiverId = 2,
-                        text = "I'm doing well",
-                        formattedTime = "15:00",
-                        isUnread = false,
-                        isOwnMessage = true
-                    ),
-                    Message(
-                        id = 1,
-                        senderId = 1,
-                        receiverId = 2,
-                        text = "Hello Raissa",
-                        formattedTime = "15:00",
-                        isUnread = false,
-                        isOwnMessage = true
-                    ),
-                    Message(
-                        id = 1,
-                        senderId = 1,
-                        receiverId = 2,
-                        text = "Hello Douglas",
-                        formattedTime = "11:00",
-                        isUnread = false,
-                        isOwnMessage = false
-                    ),
-                    Message(
-                        id = 1,
-                        senderId = 1,
-                        receiverId = 2,
-                        text = "How are you doing?",
-                        formattedTime = "11:00",
-                        isUnread = false,
-                        isOwnMessage = true
-                    ),
-                ),
+                messages = emptyList(),
                 isOnline = true
+            ),
+            messages = listOf(
+                Message(
+                    id = 1,
+                    senderId = 1,
+                    receiverId = 2,
+                    text = "I'm doing well",
+                    formattedTime = "15:00",
+                    isUnread = false,
+                    isOwnMessage = true
+                ),
+                Message(
+                    id = 1,
+                    senderId = 1,
+                    receiverId = 2,
+                    text = "Hello Raissa",
+                    formattedTime = "15:00",
+                    isUnread = false,
+                    isOwnMessage = true
+                ),
+                Message(
+                    id = 1,
+                    senderId = 1,
+                    receiverId = 2,
+                    text = "Hello Douglas",
+                    formattedTime = "11:00",
+                    isUnread = false,
+                    isOwnMessage = false
+                ),
+                Message(
+                    id = 1,
+                    senderId = 1,
+                    receiverId = 2,
+                    text = "How are you doing?",
+                    formattedTime = "11:00",
+                    isUnread = false,
+                    isOwnMessage = true
+                ),
             ),
             messageText = "",
             onNavigationClick = {},

@@ -1,4 +1,4 @@
-package com.example.chatapp.ui.feature.userlist
+package com.example.chatapp.ui.feature.userslist
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -25,7 +25,7 @@ import com.example.chatapp.ui.theme.Grey1
 
 @Composable
 fun UserListRoute(
-    viewModel: UserListViewModel = hiltViewModel(),
+    viewModel: UsersListViewModel = hiltViewModel(),
     onNavigationClick: () -> Unit,
     navigateWhenUserItemClicked: (userId: String) -> Unit,
 ) {
@@ -49,7 +49,7 @@ private fun UserListScreen(
     ChatScaffold(
         topBar = {
             ChatTopBar(
-                title = "Select a user to start chatting"
+                title = "Users"
             ) {
                 onNavigationClick()
             }

@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chatapp.ui.theme.ChatAppTheme
-import com.example.chatapp.ui.theme.Lumiance95
 
 @Composable
 fun ChatPrimaryButton(
@@ -44,15 +43,19 @@ fun ChatPrimaryButton(
         colors = ButtonDefaults.buttonColors(
             containerColor = MaterialTheme.colorScheme.primary,
             contentColor = MaterialTheme.colorScheme.onPrimary,
-            disabledContainerColor = Lumiance95
+            disabledContainerColor = MaterialTheme.colorScheme.primary
         )
     ) {
-        Text(text = title)
+        Text(
+            text = title,
+            style = MaterialTheme.typography.titleSmall
+        )
 
         if (isLoading) {
             Spacer(modifier = Modifier.width(4.dp))
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
+                trackColor = MaterialTheme.colorScheme.onPrimary,
                 strokeWidth = 2.dp
             )
         }
@@ -61,9 +64,12 @@ fun ChatPrimaryButton(
 
 @Composable
 @Preview
-fun PreviewChatPrimaryButton() {
+fun ChatPrimaryButtonPreview() {
     ChatAppTheme {
-        ChatPrimaryButton(title = "Primary button") {
+        ChatPrimaryButton(
+            title = "Primary button",
+            isLoading = true,
+        ) {
 
         }
     }

@@ -1,6 +1,7 @@
 package com.example.chatapp.model
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.example.chatapp.R
 
 data class User(
     val id: String,
@@ -9,6 +10,8 @@ data class User(
     val lastName: String,
     val profilePictureUrl: String?
 )
+
+fun User.profilePicture() = this.profilePictureUrl ?: R.drawable.no_profile_image
 
 class UserPreviewParameterProvider : PreviewParameterProvider<List<User>> {
 

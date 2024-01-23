@@ -12,23 +12,12 @@ import com.example.chatapp.ui.feature.splash.SplashRoute
 @Composable
 fun ChatNavHost(
     appState: ChatAppState,
-    startDestination: String = "splash"
 ) {
     val navController = appState.navController
 
-    NavHost(navController = appState.navController, startDestination = startDestination) {
+    NavHost(navController = appState.navController, startDestination = appState.startDestination) {
         composable("splash") {
-            SplashRoute { isLoggedIn ->
-                val navOptions = navOptions {
-                    popUpTo("splash") {
-                        inclusive = true
-                    }
-                }
-
-                if (isLoggedIn) {
-                    navController.navigateToChats(navOptions)
-                } else navController.navigate("signIn", navOptions)
-            }
+            SplashRoute()
         }
         composable("signIn") {
             SignInRoute(

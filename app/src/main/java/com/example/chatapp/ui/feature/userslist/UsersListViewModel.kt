@@ -1,4 +1,4 @@
-package com.example.chatapp.ui.feature.userlist
+package com.example.chatapp.ui.feature.userslist
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -11,12 +11,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class UserListViewModel @Inject constructor(
+class UsersListViewModel @Inject constructor(
     private val userRepository: UserRepository,
 ) : ViewModel() {
 
-    private val _state = mutableStateOf(UserListState())
-    val state: State<UserListState> = _state
+    private val _state = mutableStateOf(UsersListState())
+    val state: State<UsersListState> = _state
 
     init {
         viewModelScope.launch {

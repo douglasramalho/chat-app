@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -77,6 +78,7 @@ private fun ModalBottomSheetContent(
     ) {
         Text(
             text = "Add profile photo",
+            color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge
         )
 
@@ -91,12 +93,17 @@ private fun ModalBottomSheetContent(
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_photo_camera),
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Take a photo")
+            Text(
+                text = "Take a photo",
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -110,12 +117,17 @@ private fun ModalBottomSheetContent(
                 },
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
+            Icon(
                 painter = painterResource(id = R.drawable.ic_photo_library),
-                contentDescription = null
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Upload from photos")
+            Text(
+                text = "Upload from photos",
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

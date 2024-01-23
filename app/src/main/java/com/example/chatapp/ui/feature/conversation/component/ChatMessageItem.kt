@@ -1,13 +1,12 @@
 package com.example.chatapp.ui.feature.conversation.component
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -16,7 +15,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chatapp.model.Message
 import com.example.chatapp.ui.theme.ChatAppTheme
-import com.example.chatapp.ui.theme.Neutral
 
 @Composable
 fun ChatMessageItem(
@@ -30,29 +28,24 @@ fun ChatMessageItem(
         modifier = Modifier
             .fillMaxWidth()
     ) {
-        val modifier = if (message.isOwnMessage) {
-            Modifier
-                .padding(start = 32.dp)
-                .background(
-                    MaterialTheme.colorScheme.primary.copy(alpha = 0.75f),
-                    shape = RoundedCornerShape(32.dp),
-                )
-        } else {
-            Modifier
-                .padding(end = 32.dp)
-                .background(
-                    color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.25f),
-                    shape = RoundedCornerShape(32.dp),
-                )
-        }
+        val surfaceColor = if  (message.isOwnMessage) {
+            MaterialTheme.colorScheme.tertiary
+        } else MaterialTheme.colorScheme.secondary
 
-        Box(
-            modifier = modifier
+        val textColor = if (message.isOwnMessage) {
+            MaterialTheme.colorScheme.onTertiary
+        } else MaterialTheme.colorScheme.onSecondary
+
+        Surface(
+            modifier = Modifier
                 .wrapContentWidth(),
+            shape =  RoundedCornerShape(100.dp),
+            color = surfaceColor,
         ) {
             Text(
                 text = message.text,
-                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp),
+                color = textColor
             )
         }
 
@@ -63,7 +56,7 @@ fun ChatMessageItem(
         if (showTime) {
             Text(
                 text = message.formattedTime,
-                color = Neutral,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.labelSmall
             )
         }

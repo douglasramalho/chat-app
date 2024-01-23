@@ -1,4 +1,4 @@
-package com.example.chatapp.ui.feature.userlist
+package com.example.chatapp.ui.feature.userslist
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Row
@@ -22,6 +22,7 @@ import coil.compose.AsyncImage
 import com.example.chatapp.R
 import com.example.chatapp.model.User
 import com.example.chatapp.model.UserPreviewParameterProvider
+import com.example.chatapp.model.profilePicture
 import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
@@ -36,15 +37,12 @@ fun UserItem(
                 onItemClicked()
             }
     ) {
-        val profilePicture = user.profilePictureUrl
-            ?: R.drawable.no_profile_image
-
         Row(verticalAlignment = Alignment.CenterVertically) {
             AsyncImage(
-                model = profilePicture,
+                model = user.profilePicture(),
                 contentDescription = null,
                 modifier = Modifier
-                    .size(58.dp)
+                    .size(42.dp)
                     .clip(CircleShape),
                 contentScale = ContentScale.Crop
             )

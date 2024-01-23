@@ -49,6 +49,7 @@ import com.example.chatapp.ui.component.ChatScaffold
 import com.example.chatapp.ui.component.ChatTopBar
 import com.example.chatapp.ui.component.ConversationItem
 import com.example.chatapp.ui.feature.conversation.ConversationSection
+import com.example.chatapp.ui.feature.conversation.ConversationState
 import com.example.chatapp.ui.theme.ChatAppTheme
 import com.example.chatapp.ui.theme.Grey1
 
@@ -80,12 +81,7 @@ fun ConversationsListRoute(
     }
 
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val conversationState by chatSocketViewModel.conversationState.collectAsStateWithLifecycle()
     val currentUser by viewModel.currentUserStateFlow.collectAsStateWithLifecycle()
-
-    if (conversationState.hasUnreadMessages) {
-        viewModel.getConversationsList()
-    }
 
     val messageText by chatSocketViewModel.messageTextState
 
@@ -93,7 +89,7 @@ fun ConversationsListRoute(
         windowSizeClass = windowSizeClass,
         currentUser = currentUser,
         conversationsList = state.conversationsList,
-        messages = conversationState.messages,
+        messages = emptyList(),
         messageText = messageText,
         onConversationItemClicked = { receiverId ->
             navigateWhenConversationItemClicked(receiverId)
@@ -193,13 +189,13 @@ private fun ConversationsListScreen(
 }
 
 @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
-@Preview(device = "spec:width=800dp,height=850.9dp,dpi=440")
+@Preview()
 @Composable
 fun PreviewConversationsListScreen() {
     ChatAppTheme {
         Surface {
             ConversationsListScreen(
-                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(800.dp, 400.dp)),
+                windowSizeClass = WindowSizeClass.calculateFromSize(DpSize(340.dp, 800.dp)),
                 currentUser = null,
                 conversationsList = listOf(
                     Conversation(

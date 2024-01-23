@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import com.example.chatapp.navigation.TopLevelDestination
 import com.example.chatapp.ui.isTopLevelInHierarchy
+import com.example.chatapp.ui.theme.Neutral60
 
 @Composable
 fun ChatNavigationBar(
@@ -40,8 +41,8 @@ fun ChatNavigationBar(
                     },
                     modifier = Modifier.padding(top = 6.dp),
                     shape = CircleShape,
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                     elevation = FloatingActionButtonDefaults.elevation(
                         defaultElevation = 0.dp,
                         pressedElevation = 0.dp,
@@ -69,7 +70,10 @@ fun ChatNavigationBar(
                     },
                     alwaysShowLabel = true,
                     colors = NavigationBarItemDefaults.colors(
-                        indicatorColor = MaterialTheme.colorScheme.surface,
+                        indicatorColor = MaterialTheme.colorScheme.primary,
+                        selectedIconColor = MaterialTheme.colorScheme.onSurface,
+                        selectedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unselectedIconColor = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 )
             }

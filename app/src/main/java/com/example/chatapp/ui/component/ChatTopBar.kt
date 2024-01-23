@@ -50,7 +50,7 @@ fun ChatTopBar(
                 modifier = Modifier.clickable {
                     onNavigationClick()
                 },
-                tint = MaterialTheme.colorScheme.inverseOnSurface
+                tint = MaterialTheme.colorScheme.onPrimary
             )
             Spacer(modifier = Modifier.width(8.dp))
         }
@@ -58,7 +58,7 @@ fun ChatTopBar(
         title?.let {
             Text(
                 text = title,
-                color = MaterialTheme.colorScheme.inverseOnSurface,
+                color = MaterialTheme.colorScheme.onPrimary,
                 style = MaterialTheme.typography.titleLarge
             )
         } ?: customContent?.invoke()

@@ -13,7 +13,9 @@ import com.example.chatapp.model.Message
 import com.example.chatapp.ui.feature.conversation.ConversationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -30,6 +32,13 @@ class ChatSocketViewModel @Inject constructor(
 
     private val _conversationState = MutableStateFlow(ConversationState())
     val conversationState = _conversationState.asStateFlow()
+
+    val messagesStateFlow = messageRepository.messagesFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptyList()
+        )
 
     fun connectToSocket() {
         viewModelScope.launch {
@@ -109,26 +118,7 @@ class ChatSocketViewModel @Inject constructor(
 
     private fun getMessages(receiverId: String) {
         viewModelScope.launch {
-            messageRepository.getMessages(receiverId)
-                .collect { resultStatus ->
-                    when (resultStatus) {
-                        is ResultStatus.Error -> {
-                        }
-
-                        ResultStatus.Loading -> {
-                            _conversationState.value = _conversationState.value.copy(
-                                isLoading = true
-                            )
-                        }
-
-                        is ResultStatus.Success -> {
-                            _conversationState.value = _conversationState.value.copy(
-                                messages = resultStatus.data,
-                                isLoading = false
-                            )
-                        }
-                    }
-                }
+            messageRepository.getAndStoreMessages(receiverId)
         }
     }
 

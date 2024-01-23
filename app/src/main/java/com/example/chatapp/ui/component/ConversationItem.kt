@@ -84,14 +84,18 @@ fun ConversationItem(
                 if (conversation.unreadCount > 0) {
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = conversation.unreadCount.toString(),
-                        modifier = Modifier
-                            .background(MaterialTheme.colorScheme.primary, CircleShape)
-                            .padding(horizontal = 5.dp),
-                        color = MaterialTheme.colorScheme.inverseOnSurface,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Text(
+                            text = conversation.unreadCount.toString(),
+                            modifier = Modifier
+                                .padding(horizontal = 5.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
         }

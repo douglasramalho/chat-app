@@ -4,6 +4,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface ChatSocketService {
 
+    suspend fun connect(userId: String): Flow<Unit?>
+
     suspend fun openSession(userId: String)
 
     fun observeSocketResultFlow(): Flow<SocketSessionResult>

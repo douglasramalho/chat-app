@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -28,14 +29,9 @@ import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SplashRoute(
-    viewModel: SplashViewModel = hiltViewModel(),
-    navigate: (isLoggedIn: Boolean) -> Unit
+
 ) {
-    LaunchedEffect(key1 = Unit) {
-        viewModel.navigateAfterCheckingAuthentication.collectLatest { isLoggedIn ->
-            navigate(isLoggedIn)
-        }
-    }
+
 
     SplashScreen()
 }
@@ -64,8 +60,9 @@ fun SplashScreen() {
 
             Spacer(modifier = Modifier.width(8.dp))
 
+            val context = LocalContext.current
             Text(
-                text = "Mensagens seguras, criptografadas e privadas",
+                text = context.getString(R.string.splash_safety_info),
                 color = Color.White,
                 style = MaterialTheme.typography.bodyMedium,
             )
@@ -74,7 +71,7 @@ fun SplashScreen() {
 }
 
 @Composable
-@Preview(showBackground = true)
+@Preview
 fun PreviewSplashScreen() {
     ChatAppTheme {
         SplashScreen()

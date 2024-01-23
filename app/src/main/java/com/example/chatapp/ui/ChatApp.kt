@@ -32,8 +32,10 @@ import com.example.chatapp.ui.theme.Grey1
 @Composable
 fun ChatApp(
     windowSizeClass: WindowSizeClass,
+    startDestination: String,
     appState: ChatAppState = rememberChatAppState(
-        windowSizeClass = windowSizeClass
+        windowSizeClass = windowSizeClass,
+        startDestination = startDestination,
     )
 ) {
     Scaffold(
@@ -81,5 +83,5 @@ fun ChatApp(
 @Preview
 @Composable
 fun PreviewChatApp() {
-    ChatApp(WindowSizeClass.calculateFromSize(DpSize(300.dp, 800.dp)))
+    ChatApp(WindowSizeClass.calculateFromSize(DpSize(300.dp, 800.dp)), "")
 }

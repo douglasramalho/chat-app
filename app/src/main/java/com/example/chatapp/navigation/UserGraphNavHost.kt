@@ -7,7 +7,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import androidx.navigation.navigation
-import com.example.chatapp.ui.feature.userlist.UserListRoute
+import com.example.chatapp.ui.feature.userslist.UserListRoute
 
 const val USERS_ROUTE = "usersGraph"
 const val USERS_DESTINATION = "users"

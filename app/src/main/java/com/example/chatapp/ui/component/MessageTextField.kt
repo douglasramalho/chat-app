@@ -34,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
@@ -69,10 +70,11 @@ fun MessageTextField(
                 color = MaterialTheme.colorScheme.surface,
                 shape = ShapeDefaults.ExtraLarge.copy(CornerSize(64.dp))
             ),
-        textStyle = MaterialTheme.typography.bodyMedium,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
         keyboardOptions = KeyboardOptions(
             imeAction = ImeAction.Default,
         ),
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
         decorationBox = { innerTextField ->
             Column {
                 Row(
@@ -116,13 +118,13 @@ fun MessageTextField(
                                 onSendClicked()
                             },
                         shape = CircleShape,
-                        color = MaterialTheme.colorScheme.primary
+                        color = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Icon(
                             imageVector = Icons.Default.Send,
                             contentDescription = "Send message",
                             modifier = Modifier.padding(4.dp),
-                            tint = MaterialTheme.colorScheme.onPrimary
+                            tint = MaterialTheme.colorScheme.onPrimaryContainer
                         )
                     }
                 }

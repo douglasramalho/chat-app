@@ -7,6 +7,6 @@ object MessagesResource {
     data class Messages(
         val receiverId: String,
         val offset: String = "0",
-        val limit: String = "10"
+        val limit: String = "30"
     )
 }

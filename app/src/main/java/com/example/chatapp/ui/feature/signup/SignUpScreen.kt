@@ -71,15 +71,26 @@ fun SignUpRoute(
                 TextButton(
                     onClick = viewModel::errorMessageShown
                 ) {
-                    Text(text = context.getString(R.string.common_ok))
+                    Text(
+                        text = context.getString(R.string.common_ok),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             },
             title = {
-                Text(text = context.getString(R.string.common_generic_error_title))
+                Text(
+                    text = context.getString(R.string.common_generic_error_title),
+                )
             },
             text = {
-                Text(text = context.getString(it))
-            }
+                Text(
+                    text = context.getString(it),
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            containerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            textContentColor = MaterialTheme.colorScheme.onSurface,
         )
     }
 
@@ -260,6 +271,13 @@ private fun SignUpScreen(
                 val endIndex = startIndex + 10
 
                 append(text)
+                addStyle(
+                    style = SpanStyle(
+                        color = MaterialTheme.colorScheme.onSurface,
+                    ),
+                    start = 0,
+                    end = startIndex
+                )
                 addStyle(
                     style = SpanStyle(
                         color = MaterialTheme.colorScheme.primary,

@@ -25,6 +25,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -65,7 +66,7 @@ fun SecondaryTextField(
         modifier = Modifier
             .fillMaxWidth()
             .background(color = Color.White),
-        textStyle = MaterialTheme.typography.bodyMedium,
+        textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.onSurface),
         keyboardOptions = KeyboardOptions(
             capitalization = if (keyboardType == KeyboardType.Text) {
                 KeyboardCapitalization.Sentences
@@ -81,8 +82,12 @@ fun SecondaryTextField(
             } else PasswordVisualTransformation()
 
         } else VisualTransformation.None,
+        cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurfaceVariant),
         decorationBox = { innerTextField ->
-            Column {
+            Column(
+                modifier = Modifier
+                    .background(color = MaterialTheme.colorScheme.surface)
+            ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -90,7 +95,7 @@ fun SecondaryTextField(
                             strokeWidth = 1.dp,
                             color = errorMessage?.let {
                                 MaterialTheme.colorScheme.error
-                            } ?: Color.Black
+                            } ?: MaterialTheme.colorScheme.onSurfaceVariant
                         ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -101,8 +106,9 @@ fun SecondaryTextField(
                     ) {
                         Text(
                             text = label,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontWeight = FontWeight.Bold,
                             style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = FontWeight.Bold
                         )
 
                         Row(
@@ -110,8 +116,8 @@ fun SecondaryTextField(
                             modifier = Modifier
                                 .fillMaxWidth()
                         ) {
-                            //this must be called once and in any part of this lambda we want to put it
                             Box(modifier = Modifier.weight(1f)) {
+                                //this must be called once and in any part of this lambda we want to put it
                                 innerTextField()
                             }
 

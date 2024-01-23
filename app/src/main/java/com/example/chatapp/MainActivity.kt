@@ -1,12 +1,12 @@
 package com.example.chatapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
 import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -34,7 +34,6 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
 
-        // Update the uiState
         lifecycleScope.launch {
             lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.uiState.onEach {
@@ -52,13 +51,22 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             ChatAppTheme {
-                ChatApp(windowSizeClass = calculateWindowSizeClass(activity = this))
+                val startDestination = when (uiState) {
+                    is MainViewModel.UiState.Loading -> "splash"
+                    is MainViewModel.UiState.Success -> "chatsGraph"
+                    is MainViewModel.UiState.Error -> "signIn"
+                }
+
+                ChatApp(
+                    windowSizeClass = calculateWindowSizeClass(activity = this),
+                    startDestination = startDestination
+                )
             }
         }
     }
 
-    override fun onPause() {
-        super.onPause()
+    override fun onStop() {
+        super.onStop()
         chatSocketViewModel.closeSocketConnection()
     }
 }
