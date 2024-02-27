@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.domain.GetUserInfoUseCase
+import com.example.chatapp.model.AppError
 import com.example.chatapp.model.User
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -30,7 +31,11 @@ class SplashViewModel @Inject constructor(
         viewModelScope.launch {
             getUserInfoUseCase().collect { resultStatus ->
                 _uiState.value = when (resultStatus) {
-                    is ResultStatus.Error -> SplashUiState.Error
+                    is ResultStatus.Error -> {
+                        if (resultStatus.exception is AppError.ApiError.Unauthorized) {
+                            SplashUiState.Unauthenticated
+                        } else SplashUiState.Error
+                    }
                     ResultStatus.Loading -> SplashUiState.Loading
                     is ResultStatus.Success -> {
                         val user = userRepository.currentUser.first()
@@ -44,6 +49,7 @@ class SplashViewModel @Inject constructor(
     sealed interface SplashUiState {
         data object Loading : SplashUiState
         data class Success(val user: User) : SplashUiState
+        data object Unauthenticated : SplashUiState
         data object Error : SplashUiState
     }
 }

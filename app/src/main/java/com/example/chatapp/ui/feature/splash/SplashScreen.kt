@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.chatapp.R
+import com.example.chatapp.model.AppError
 import com.example.chatapp.ui.theme.BackgroundGradient
 import com.example.chatapp.ui.theme.ChatAppTheme
 
@@ -54,6 +55,9 @@ fun SplashRoute(
                 if ((uiState as SplashViewModel.SplashUiState.Success).user.id.isNotEmpty()) {
                     currentNavigateToConversationsList()
                 } else currentNavigateToSigIn()
+            }
+            is SplashViewModel.SplashUiState.Unauthenticated -> {
+                currentNavigateToSigIn()
             }
             else -> {}
         }

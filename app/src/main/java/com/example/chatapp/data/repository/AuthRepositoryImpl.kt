@@ -3,6 +3,7 @@ package com.example.chatapp.data.repository
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.network.NetworkDataSource
+import com.example.chatapp.data.network.NetworkError
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
 import com.example.chatapp.data.network.response.toModel
@@ -52,7 +53,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun getAndStoreUserInfo() {
         return if (!isAuthenticated()) {
-            throw AppError.ApiError.Unauthorized
+            throw NetworkError.Unauthorized
         } else {
             val userResponse = networkDataSource.authenticate()
             appPreferencesDataSource.saveCurrentUser(userResponse.toModel())
