@@ -22,17 +22,14 @@ import com.example.chatapp.navigation.navigateToUsers
 fun rememberChatAppState(
     windowSizeClass: WindowSizeClass,
     navController: NavHostController = rememberNavController(),
-    startDestination: String,
 ): ChatAppState {
     return remember(
         navController,
         windowSizeClass,
-        startDestination,
     ) {
         ChatAppState(
             windowSizeClass,
             navController,
-            startDestination,
         )
     }
 }
@@ -41,7 +38,6 @@ fun rememberChatAppState(
 class ChatAppState(
     val windowSizeClass: WindowSizeClass,
     val navController: NavHostController,
-    val startDestination: String,
 ) {
     val currentDestination: NavDestination?
         @Composable get() = navController

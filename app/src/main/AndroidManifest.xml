@@ -25,8 +25,21 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <intent-filter>
+                <data
+                    android:scheme="https"
+                    android:host="chatapp.androidmoderno.com.br" />
+            </intent-filter>
         </activity>
-        
+
+        <service
+            android:name=".service.FcmMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <provider
             android:authorities="com.example.chatapp.fileprovider"
             android:name=".ChatAppFileProvider"

@@ -1,4 +1,4 @@
-package com.example.chatapp.ui
+package com.example.chatapp.ui.feature.conversation
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +10,6 @@ import com.example.chatapp.data.repository.SocketResult
 import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.data.util.ResultStatus
 import com.example.chatapp.model.Message
-import com.example.chatapp.ui.feature.conversation.ConversationState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,7 +20,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class ChatSocketViewModel @Inject constructor(
+class ConversationViewModel @Inject constructor(
     private val messageRepository: MessageRepository,
     private val chatSocketRepository: ChatSocketRepository,
     private val userRepository: UserRepository,
@@ -48,6 +47,7 @@ class ChatSocketViewModel @Inject constructor(
                     when (socketResult) {
                         is SocketResult.NewMessage -> {
                             val message = socketResult.message
+                            messageRepository.saveNewMessage(message)
                             val newList = conversationState.value.messages.toMutableList().apply {
                                 add(0, message)
                             }

@@ -1,7 +1,7 @@
 package com.example.chatapp.data.repository
 
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
-import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.network.NetworkDataSource
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
@@ -13,7 +13,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource,
     private val chatSocketRepository: ChatSocketRepository,
-    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    private val appPreferencesDataSource: AppPreferencesDataSource,
     private val dataStorePreferencesDataSource: DataStorePreferencesDataSource,
 ) : AuthRepository {
 
@@ -55,7 +55,7 @@ class AuthRepositoryImpl @Inject constructor(
             throw AppError.ApiError.Unauthorized
         } else {
             val userResponse = networkDataSource.authenticate()
-            dataStoreProtoDataSource.saveCurrentUser(userResponse.toModel())
+            appPreferencesDataSource.saveCurrentUser(userResponse.toModel())
         }
     }
 
@@ -64,7 +64,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout() {
-        dataStoreProtoDataSource.clear()
+        appPreferencesDataSource.clear()
         dataStorePreferencesDataSource.clear()
         chatSocketRepository.closeSession()
     }

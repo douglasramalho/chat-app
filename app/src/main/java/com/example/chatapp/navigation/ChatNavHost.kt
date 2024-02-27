@@ -8,16 +8,32 @@ import com.example.chatapp.ui.ChatAppState
 import com.example.chatapp.ui.feature.signin.SignInRoute
 import com.example.chatapp.ui.feature.signup.SignUpRoute
 import com.example.chatapp.ui.feature.splash.SplashRoute
+import kotlinx.coroutines.delay
 
 @Composable
 fun ChatNavHost(
     appState: ChatAppState,
+    closeApp: () -> Unit,
 ) {
     val navController = appState.navController
 
-    NavHost(navController = appState.navController, startDestination = appState.startDestination) {
+    NavHost(navController = appState.navController, startDestination = "splash") {
         composable("splash") {
-            SplashRoute()
+            val navOptions = navOptions {
+                popUpTo("splash") {
+                    inclusive = true
+                }
+            }
+
+            SplashRoute(
+                navigateToConversationsList = {
+                    navController.navigateToChats(navOptions)
+                },
+                navigateToSigIn = {
+                    navController.navigate("signIn", navOptions)
+                },
+                closeApp = closeApp
+            )
         }
         composable("signIn") {
             SignInRoute(
@@ -59,7 +75,6 @@ fun ChatNavHost(
         }
 
         chatsNavGraph(
-            appState = appState,
             navController = navController
         )
 

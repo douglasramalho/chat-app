@@ -8,4 +8,6 @@ interface MessageRepository {
     val messagesFlow: Flow<List<Message>>
 
     suspend fun getAndStoreMessages(receiverId: String)
+
+    suspend fun saveNewMessage(message: Message)
 }

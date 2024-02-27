@@ -3,6 +3,7 @@ package com.example.chatapp.data.network
 import com.example.chatapp.data.network.di.ApiHttpClient
 import com.example.chatapp.data.network.request.AuthRequest
 import com.example.chatapp.data.network.request.CreateAccountRequest
+import com.example.chatapp.data.network.request.RegisterPushRequest
 import com.example.chatapp.data.network.resource.ConversationsResource
 import com.example.chatapp.data.network.resource.MessagesResource
 import com.example.chatapp.data.network.resource.UsersResource
@@ -48,6 +49,14 @@ class NetworkDataSourceImpl @Inject constructor(
     override suspend fun authenticate(): UserResponse {
         return safeApiCall {
             httpClient.get("authenticate").body()
+        }
+    }
+
+    override suspend fun registerNotifications(request: RegisterPushRequest) {
+        return safeApiCall {
+            httpClient.post("notifications/register") {
+                setBody(request)
+            }
         }
     }
 

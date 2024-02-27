@@ -3,13 +3,10 @@ package com.example.chatapp.data.network.di
 import android.content.Context
 import android.content.Intent
 import com.example.chatapp.MainActivity
+import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
-import com.example.chatapp.data.datastore.DataStoreProtoDataSource
-import com.example.chatapp.data.network.ChatApiService
 import com.example.chatapp.data.network.NetworkError
 import com.example.chatapp.data.ws.ChatSocketService
-import com.squareup.moshi.Moshi
-import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -38,9 +35,6 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
-import okhttp3.OkHttpClient
-import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -71,7 +65,7 @@ object ApiModule {
     @ApiHttpClient
     fun provideClient(
         @ApplicationContext context: Context,
-        dataStoreProtoDataSource: DataStoreProtoDataSource,
+        appPreferencesDataSource: AppPreferencesDataSource,
         dataStorePreferencesDataSource: DataStorePreferencesDataSource,
         chatSocketService: ChatSocketService,
     ): HttpClient {
@@ -88,7 +82,7 @@ object ApiModule {
                         HttpStatusCode.Conflict -> NetworkError.Conflict
                         HttpStatusCode.Unauthorized -> {
                             chatSocketService.closeSession()
-                            dataStoreProtoDataSource.clear()
+                            appPreferencesDataSource.clear()
                             dataStorePreferencesDataSource.clear()
 
                             context.startActivity(
@@ -159,23 +153,5 @@ object ApiModule {
                 execute(request)
             }
         }
-    }
-
-    @Provides
-    @Singleton
-    fun provideApiService(client: OkHttpClient): ChatApiService {
-        // Prod: https://chat-api.douglasmotta.com.br
-        return Retrofit.Builder()
-            .baseUrl("http://192.168.1.68:8080/")
-            .addConverterFactory(
-                MoshiConverterFactory.create(
-                    Moshi.Builder().add(
-                        KotlinJsonAdapterFactory()
-                    ).build()
-                )
-            )
-            .client(client)
-            .build()
-            .create(ChatApiService::class.java)
     }
 }

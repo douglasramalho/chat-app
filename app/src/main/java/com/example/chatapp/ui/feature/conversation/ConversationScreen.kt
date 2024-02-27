@@ -1,6 +1,5 @@
 package com.example.chatapp.ui.feature.conversation
 
-import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -21,7 +20,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -30,24 +28,18 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.AsyncImage
-import com.example.chatapp.MainActivity
 import com.example.chatapp.R
 import com.example.chatapp.model.Message
 import com.example.chatapp.model.User
-import com.example.chatapp.ui.ChatSocketViewModel
 import com.example.chatapp.ui.component.ChatScaffold
 import com.example.chatapp.ui.component.ChatTopBar
 import com.example.chatapp.ui.component.MessageTextField
 import com.example.chatapp.ui.feature.conversation.component.ChatMessageItem
 import com.example.chatapp.ui.theme.ChatAppTheme
-import kotlinx.coroutines.delay
 
 @Composable
 fun ConversationRoute(
-    context: Context = LocalContext.current,
-    chatSocketViewModel: ChatSocketViewModel = hiltViewModel(
-        viewModelStoreOwner = context as MainActivity
-    ),
+    conversationViewModel: ConversationViewModel = hiltViewModel(),
     receiverId: String?,
     onNavigationClick: () -> Unit,
 ) {
@@ -57,8 +49,14 @@ fun ConversationRoute(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 receiverId?.let {
-                    chatSocketViewModel.connectToSocket()
-                    chatSocketViewModel.onConversation(it)
+                    conversationViewModel.connectToSocket()
+                    conversationViewModel.onConversation(it)
+                }
+            }
+
+            if (event == Lifecycle.Event.ON_PAUSE) {
+                receiverId?.let {
+                    conversationViewModel.closeSocketConnection()
                 }
             }
         }
@@ -70,12 +68,12 @@ fun ConversationRoute(
         }
     }
 
-    val state by chatSocketViewModel.conversationState.collectAsStateWithLifecycle()
-    val messages by chatSocketViewModel.messagesStateFlow.collectAsStateWithLifecycle()
-    val messageText by chatSocketViewModel.messageTextState
+    val state by conversationViewModel.conversationState.collectAsStateWithLifecycle()
+    val messages by conversationViewModel.messagesStateFlow.collectAsStateWithLifecycle()
+    val messageText by conversationViewModel.messageTextState
 
     messages.forEach {
-        chatSocketViewModel.readMessage(it)
+        conversationViewModel.readMessage(it)
     }
 
     ConversationScreen(
@@ -83,8 +81,8 @@ fun ConversationRoute(
         messages,
         messageText,
         onNavigationClick,
-        chatSocketViewModel::onMessageChange,
-        onSendMessage = { chatSocketViewModel.sendMessage(receiverId!!) }
+        conversationViewModel::onMessageChange,
+        onSendMessage = { conversationViewModel.sendMessage(receiverId!!) }
     )
 }
 

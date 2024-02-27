@@ -28,15 +28,13 @@ import com.example.chatapp.ui.component.ChatNavigationBar
 import com.example.chatapp.ui.component.ChatNavigationRail
 import com.example.chatapp.ui.theme.Grey1
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ChatApp(
     windowSizeClass: WindowSizeClass,
-    startDestination: String,
     appState: ChatAppState = rememberChatAppState(
         windowSizeClass = windowSizeClass,
-        startDestination = startDestination,
-    )
+    ),
+    closeApp: () -> Unit,
 ) {
     Scaffold(
         bottomBar = {
@@ -73,7 +71,7 @@ fun ChatApp(
             }
 
             Column(modifier = Modifier.fillMaxSize()) {
-                ChatNavHost(appState)
+                ChatNavHost(appState, closeApp)
             }
         }
     }
@@ -83,5 +81,5 @@ fun ChatApp(
 @Preview
 @Composable
 fun PreviewChatApp() {
-    ChatApp(WindowSizeClass.calculateFromSize(DpSize(300.dp, 800.dp)), "")
+    ChatApp(WindowSizeClass.calculateFromSize(DpSize(300.dp, 800.dp)), closeApp = {})
 }

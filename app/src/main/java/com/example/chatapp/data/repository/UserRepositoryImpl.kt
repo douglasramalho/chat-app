@@ -1,6 +1,6 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.network.NetworkDataSource
 import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.util.ResultStatus
@@ -12,21 +12,19 @@ import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class UserRepositoryImpl @Inject constructor(
-    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    appPreferencesDataSource: AppPreferencesDataSource,
     private val networkDataSource: NetworkDataSource,
 ) : UserRepository {
 
-    override val currentUser: Flow<User?>
-        get() = dataStoreProtoDataSource.currentUser.map { currentUser ->
-            if (currentUser.id.isNotEmpty()) {
-                User(
-                    id = currentUser.id,
-                    username = currentUser.email,
-                    firstName = currentUser.firstName,
-                    lastName = currentUser.firstName,
-                    profilePictureUrl = currentUser.profilePictureUrl,
-                )
-            } else null
+    override val currentUser: Flow<User> = appPreferencesDataSource.currentUser
+        .map {
+            User(
+                id = it.id,
+                username = it.email,
+                firstName = it.firstName,
+                lastName = it.firstName,
+                profilePictureUrl = it.profilePictureUrl,
+            )
         }
 
     override suspend fun uploadProfilePicture(filePath: String): Image {

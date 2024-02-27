@@ -7,8 +7,8 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import androidx.navigation.compose.composable
+import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
-import com.example.chatapp.ui.ChatAppState
 import com.example.chatapp.ui.feature.conversation.ConversationRoute
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListRoute
 
@@ -20,22 +20,28 @@ fun NavController.navigateToChats(navOptions: NavOptions? = null) {
 }
 
 fun NavGraphBuilder.chatsNavGraph(
-    appState: ChatAppState,
     navController: NavHostController
 ) {
     navigation(
         route = CHATS_ROUTE,
         startDestination = CHATS_DESTINATION
     ) {
-        composable(CHATS_DESTINATION) {
+        composable(
+            CHATS_DESTINATION,
+        ) {
             ConversationsListRoute(
-                windowSizeClass = appState.windowSizeClass,
                 navigateWhenConversationItemClicked = { receiverId ->
                     navController.navigate("conversation/$receiverId")
                 }
             )
         }
-        composable("conversation/{receiverId}",
+        composable(
+            route = "conversation/{receiverId}",
+            deepLinks = listOf(
+                navDeepLink {
+                    uriPattern = "https://chatapp.androidmoderno.com.br/conversation/{receiverId}"
+                }
+            ),
             enterTransition = {
                 slideIntoContainer(
                     towards = AnimatedContentTransitionScope.SlideDirection.Up,

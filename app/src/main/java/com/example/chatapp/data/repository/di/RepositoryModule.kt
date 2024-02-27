@@ -8,15 +8,18 @@ import com.example.chatapp.data.repository.ConversationRepository
 import com.example.chatapp.data.repository.ConversationRepositoryImpl
 import com.example.chatapp.data.repository.MessageRepository
 import com.example.chatapp.data.repository.MessageRepositoryImpl
+import com.example.chatapp.data.repository.NotificationRepository
+import com.example.chatapp.data.repository.NotificationRepositoryImpl
 import com.example.chatapp.data.repository.UserRepository
 import com.example.chatapp.data.repository.UserRepositoryImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ViewModelComponent
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ViewModelComponent::class)
+@InstallIn(SingletonComponent::class)
 interface RepositoryModule {
 
     @Binds
@@ -33,4 +36,8 @@ interface RepositoryModule {
 
     @Binds
     fun bindUserRepository(repository: UserRepositoryImpl): UserRepository
+
+    @Binds
+    @Singleton
+    fun bindNotificationRepository(repository: NotificationRepositoryImpl): NotificationRepository
 }

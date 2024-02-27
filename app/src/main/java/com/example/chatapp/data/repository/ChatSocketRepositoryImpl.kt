@@ -1,6 +1,6 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.ws.ChatSocketService
 import com.example.chatapp.data.ws.SocketSessionResult
@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 sealed interface SocketResult {
@@ -26,19 +25,19 @@ sealed interface SocketResult {
 
 class ChatSocketRepositoryImpl @Inject constructor(
     private val chatSocketService: ChatSocketService,
-    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    private val appPreferencesDataSource: AppPreferencesDataSource,
 ) : ChatSocketRepository {
 
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
     override suspend fun openSession() {
-        val currentUser = dataStoreProtoDataSource.currentUser.first()
+        val currentUser = appPreferencesDataSource.currentUser.first()
         chatSocketService.openSession(currentUser.id)
     }
 
     override suspend fun observeSocketResult(): Flow<SocketResult> {
-        val currentUser = dataStoreProtoDataSource.currentUser.first()
+        val currentUser = appPreferencesDataSource.currentUser.first()
 
         return chatSocketService.observeSocketResultFlow()
             .map {

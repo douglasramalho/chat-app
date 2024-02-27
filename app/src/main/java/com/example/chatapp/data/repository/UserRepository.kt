@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface UserRepository {
 
-    val currentUser: Flow<User?>
+    val currentUser: Flow<User>
 
     suspend fun uploadProfilePicture(filePath: String): Image
 

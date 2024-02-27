@@ -28,8 +28,7 @@ class ValidatePasswordFieldUseCase @Inject constructor() {
     }
 
     private fun String.isLessThanEightChars(): Boolean {
-        return this.length < 6
-        8
+        return this.length < 8
     }
 
     private fun String.isPasswordValid(): Boolean {

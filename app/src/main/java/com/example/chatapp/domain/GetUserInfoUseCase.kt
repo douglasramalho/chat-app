@@ -14,6 +14,7 @@ import javax.inject.Inject
 
 class GetUserInfoUseCase @Inject constructor(
     private val authRepository: AuthRepository,
+    private val registerPushNotificationUseCase: RegisterPushNotificationUseCase,
     @Dispatcher(AppDispatchers.IO)
     private val dispatcher: CoroutineDispatcher,
 ) {
@@ -22,6 +23,7 @@ class GetUserInfoUseCase @Inject constructor(
         return flow {
             emit(ResultStatus.Loading)
             authRepository.getAndStoreUserInfo()
+            registerPushNotificationUseCase()
             emit(ResultStatus.Success(Unit))
 
         }.catch {

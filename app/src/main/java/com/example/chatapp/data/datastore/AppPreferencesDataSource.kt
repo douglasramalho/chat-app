@@ -6,7 +6,7 @@ import com.example.chatapp.model.User
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class DataStoreProtoDataSource @Inject constructor(
+class AppPreferencesDataSource @Inject constructor(
     private val currentUserProto: DataStore<CurrentUser>
 ) {
 

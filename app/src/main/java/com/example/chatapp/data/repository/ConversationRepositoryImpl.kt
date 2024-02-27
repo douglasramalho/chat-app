@@ -1,6 +1,6 @@
 package com.example.chatapp.data.repository
 
-import com.example.chatapp.data.datastore.DataStoreProtoDataSource
+import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.network.NetworkDataSource
 import com.example.chatapp.data.network.response.toModel
 import com.example.chatapp.data.util.ResultStatus
@@ -13,11 +13,11 @@ import javax.inject.Inject
 
 class ConversationRepositoryImpl @Inject constructor(
     private val networkDataSource: NetworkDataSource,
-    private val dataStoreProtoDataSource: DataStoreProtoDataSource,
+    private val appPreferencesDataSource: AppPreferencesDataSource,
 ) : ConversationRepository {
 
     override suspend fun getConversations(): Flow<ResultStatus<List<Conversation>>> {
-        return dataStoreProtoDataSource.currentUser.firstOrNull()?.id?.let { currentUserId ->
+        return appPreferencesDataSource.currentUser.firstOrNull()?.id?.let { currentUserId ->
             getFlowResult {
                 val response = networkDataSource.getConversations()
                 response.conversations.map { it.toModel(currentUserId) }
