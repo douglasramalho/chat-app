@@ -1,5 +1,6 @@
 package com.example.chatapp.ui.component
 
+import android.content.Context
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -32,6 +34,7 @@ import com.example.chatapp.ui.theme.ChatAppTheme
 
 @Composable
 fun ProfilePicture(
+    context: Context = LocalContext.current,
     onPhotoSelected: (path: String?) -> Unit
 ) {
     var hasImage by rememberSaveable {
@@ -45,8 +48,6 @@ fun ProfilePicture(
     var showBottomSheet by rememberSaveable {
         mutableStateOf(false)
     }
-
-    val context = LocalContext.current
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -77,8 +78,8 @@ fun ProfilePicture(
     )
 
     val text = profilePictureUri?.let {
-        "Change profile photo"
-    } ?: "Add profile photo"
+        stringResource(id = R.string.feature_sign_up_change_profile_photo)
+    } ?: stringResource(id = R.string.common_add_profile_photo)
 
     Column(
         modifier = Modifier

@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -179,34 +180,37 @@ private fun SignUpScreen(
 
             Spacer(modifier = Modifier.height(30.dp))
 
+            val firstNameLabel = stringResource(id = R.string.feature_sign_up_first_name)
             SecondaryTextField(
-                label = "First name",
+                label = firstNameLabel,
                 value = signUpUiState.firstName,
                 errorMessage = signUpUiState.firstNameError?.let {
-                    context.getString(it, "First name")
+                    context.getString(it, firstNameLabel)
                 },
                 onInputChange = onFirstNameChanged::invoke
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val lastNameLabel = stringResource(id = R.string.feature_sign_up_last_name)
             SecondaryTextField(
-                label = "Last name",
+                label = lastNameLabel,
                 value = signUpUiState.lastName,
                 errorMessage = signUpUiState.lastNameError?.let {
-                    context.getString(it, "Last name")
+                    context.getString(it, lastNameLabel)
                 },
                 onInputChange = onLastNameChanged::invoke
             )
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val emailLabel = stringResource(id = R.string.feature_sign_up_email)
             SecondaryTextField(
-                label = "E-mail",
+                label = emailLabel,
                 value = signUpUiState.email,
                 keyboardType = KeyboardType.Email,
                 errorMessage = signUpUiState.emailError?.let {
-                    context.getString(it, "Email")
+                    context.getString(it, emailLabel)
                 },
                 onInputChange = onEmailChanged::invoke
             )
@@ -222,11 +226,11 @@ private fun SignUpScreen(
             }
 
             val extraText = if (password.isNotEmpty() && password == passwordConfirmation) {
-                "as senhas são iguais"
+                stringResource(id = R.string.feature_sign_up_passwords_match)
             } else ""
 
             SecondaryTextField(
-                label = "Password",
+                label = stringResource(id = R.string.feature_sign_up_password),
                 value = signUpUiState.password,
                 extraText = extraText,
                 errorMessage = signUpUiState.passwordError?.let {
@@ -241,7 +245,7 @@ private fun SignUpScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             SecondaryTextField(
-                label = "Password confirmation",
+                label = stringResource(id = R.string.feature_sign_up_password_confirmation),
                 value = signUpUiState.passwordConfirmation,
                 extraText = extraText,
                 errorMessage = signUpUiState.passwordError?.let {
@@ -257,7 +261,7 @@ private fun SignUpScreen(
             Spacer(modifier = Modifier.height(36.dp))
 
             ChatPrimaryButton(
-                title = "Sign Up",
+                title = stringResource(id = R.string.feature_sign_up_button),
                 modifier = Modifier.fillMaxWidth(),
                 isLoading = signUpUiState.isLoading,
                 onClick = signUpClicked::invoke
@@ -265,10 +269,12 @@ private fun SignUpScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            val hasAccountLabel = stringResource(id = R.string.feature_sign_up_has_account)
+            val loginHereLabel = stringResource(id = R.string.feature_sign_up_login_here)
             val annotatedString = buildAnnotatedString {
-                val text = "Do you have an account? Login here"
-                val startIndex = text.indexOf("Login")
-                val endIndex = startIndex + 10
+                val text = "$hasAccountLabel $loginHereLabel"
+                val startIndex = text.indexOf(loginHereLabel)
+                val endIndex = startIndex + loginHereLabel.lastIndex + 1
 
                 append(text)
                 addStyle(
@@ -289,7 +295,7 @@ private fun SignUpScreen(
 
                 addStringAnnotation(
                     tag = "route",
-                    annotation = "signin",
+                    annotation = "login",
                     start = startIndex,
                     end = endIndex
                 )

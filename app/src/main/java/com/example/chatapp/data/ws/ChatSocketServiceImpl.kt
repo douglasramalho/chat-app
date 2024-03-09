@@ -36,16 +36,9 @@ class ChatSocketServiceImpl @Inject constructor(
 
     private var socket: WebSocketSession? = null
 
-    override suspend fun connect(userId: String): Flow<Unit?> = flow {
-        client.webSocket("ws://192.168.1.68:8080/chat/$userId") {
-            socket = this
-            emit(Unit)
-        }
-    }
-
     override suspend fun openSession(userId: String) {
         try {
-            socket = client.webSocketSession("ws://192.168.1.68:8080/chat/$userId")
+            socket = client.webSocketSession("ws://chat-api.androidmoderno.com.br:8080/chat/$userId")
         } catch (e: Exception) {
             e.printStackTrace()
         }

@@ -44,7 +44,6 @@ import com.google.accompanist.permissions.rememberPermissionState
 
 @Composable
 fun ConversationsListRoute(
-    context: Context = LocalContext.current,
     viewModel: ConversationsListViewModel = hiltViewModel(),
     navigateWhenConversationItemClicked: (receiverId: String) -> Unit,
 ) {

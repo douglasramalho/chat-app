@@ -127,7 +127,7 @@ class SignUpViewModel @Inject constructor(
                             errorMessageStringResId = if (resultStatus is ResultStatus.Error) {
                                 val error = resultStatus.exception
                                 if (error is AppError.ApiError.Conflict) {
-                                    R.string.error_message_sign_up_user_with_username_already_exists
+                                    R.string.error_message_user_with_username_already_exists
                                 } else R.string.common_generic_error_message
                             } else null
                         )

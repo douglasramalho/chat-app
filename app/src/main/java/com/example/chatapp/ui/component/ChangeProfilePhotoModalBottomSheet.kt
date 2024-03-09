@@ -1,6 +1,5 @@
 package com.example.chatapp.ui.component
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -21,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.chatapp.R
@@ -77,7 +77,7 @@ private fun ModalBottomSheetContent(
             .padding(16.dp)
     ) {
         Text(
-            text = "Add profile photo",
+            text = stringResource(id = R.string.common_add_profile_photo),
             color = MaterialTheme.colorScheme.onSurface,
             style = MaterialTheme.typography.titleLarge
         )
@@ -100,7 +100,7 @@ private fun ModalBottomSheetContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Take a photo",
+                text = stringResource(id = R.string.common_take_photo),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -124,7 +124,7 @@ private fun ModalBottomSheetContent(
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Upload from photos",
+                text = stringResource(id = R.string.common_upload_photo),
                 color = MaterialTheme.colorScheme.onSurface,
                 style = MaterialTheme.typography.bodyLarge
             )

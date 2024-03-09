@@ -132,8 +132,8 @@ object ApiModule {
             }*/
 
             defaultRequest {
-                // Prod: https://chat-api.douglasmotta.com.br
-                url("http://192.168.1.68:8080/")
+                url("https://chat-api.androidmoderno.com.br/")
+                // url("http://192.168.1.68:8080/")
                 contentType(ContentType.Application.Json)
             }
 

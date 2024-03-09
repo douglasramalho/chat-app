@@ -79,7 +79,7 @@ class SignInViewModel @Inject constructor(
                         isLoggedIn = resultStatus is ResultStatus.Success,
                         errorMessageStringResId = if (resultStatus is ResultStatus.Error) {
                             if (resultStatus.exception is AppError.ApiError.Conflict) {
-                                R.string.error_message_sign_in_invalid_username_or_password
+                                R.string.error_message_invalid_username_or_password
                             } else R.string.common_generic_error_message
                         } else null
                     )

@@ -25,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.ImeAction
@@ -104,8 +105,6 @@ private fun SignInScreen(
     signInClicked: () -> Unit,
     signUpClicked: () -> Unit
 ) {
-    val context = LocalContext.current
-
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -123,22 +122,24 @@ private fun SignInScreen(
 
         Spacer(modifier = Modifier.height(78.dp))
 
+        val emailLabel = stringResource(id = R.string.feature_login_email)
         PrimaryChatTextField(
             value = signInUiState.email,
             leftIcon = R.drawable.ic_envelope,
-            placeholder = "E-mail",
-            errorMessage = signInUiState.emailError?.let { context.getString(it, "E-mail") },
+            placeholder = emailLabel,
+            errorMessage = signInUiState.emailError?.let { stringResource(it, emailLabel) },
             keyboardType = KeyboardType.Email,
             onInputChange = onEmailChanged::invoke
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        val passwordLabel = stringResource(id = R.string.feature_login_password)
         PrimaryChatTextField(
             value = signInUiState.password,
             leftIcon = R.drawable.ic_lock,
-            placeholder = "Password",
-            errorMessage = signInUiState.passwordError?.let { context.getString(it, "Password") },
+            placeholder = passwordLabel,
+            errorMessage = signInUiState.passwordError?.let { stringResource(it, passwordLabel) },
             imeAction = ImeAction.Done,
             keyboardType = KeyboardType.Password,
             onInputChange = onPasswordChanged::invoke
@@ -147,7 +148,7 @@ private fun SignInScreen(
         Spacer(modifier = Modifier.height(64.dp))
 
         ChatPrimaryButton(
-            title = "Sign In",
+            title = stringResource(id = R.string.feature_login_button),
             modifier = Modifier.fillMaxWidth(),
             isLoading = signInUiState.isLoading
         ) {
@@ -156,10 +157,12 @@ private fun SignInScreen(
 
         Spacer(modifier = Modifier.height(56.dp))
 
+        val noAccountLabel = stringResource(id = R.string.feature_login_no_account)
+        val registerLabel = stringResource(id = R.string.feature_login_register)
         val annotatedString = buildAnnotatedString {
-            val text = "Don't have an account? Sign up here"
-            val startIndex = text.indexOf("Sign")
-            val endIndex = startIndex + 12
+            val text = "$noAccountLabel $registerLabel"
+            val startIndex = text.indexOf(registerLabel)
+            val endIndex = startIndex + registerLabel.lastIndex + 1
 
             append(text)
             addStyle(
@@ -180,7 +183,7 @@ private fun SignInScreen(
 
             addStringAnnotation(
                 tag = "route",
-                annotation = "singup",
+                annotation = "register",
                 start = startIndex,
                 end = endIndex
             )

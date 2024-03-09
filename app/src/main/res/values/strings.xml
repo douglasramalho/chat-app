@@ -1,14 +1,38 @@
 <resources>
     <string name="app_name">ChatApp</string>
-    <string name="splash_safety_info">Mensagens seguras, criptografadas e privadas</string>
-    <string name="error_message_field_blank">%1s can\'t be blank</string>
-    <string name="error_message_email_invalid">E-mail is invalid</string>
-    <string name="error_message_password_less_than_eight_chars">Password should consist of at least 8 chars</string>
-    <string name="error_message_password_invalid">Password should contain at least one letter and digit</string>
-    <string name="error_message_password_confirmation_invalid">Password confirmation does not match</string>
-    <string name="error_message_sign_up_user_with_username_already_exists">User with this username already exits</string>
-    <string name="error_message_sign_in_invalid_username_or_password">Invalid username or password</string>
-    <string name="common_generic_error_title">Something went wrong</string>
-    <string name="common_generic_error_message">Something went wrong in the app. Try again or report a bug</string>
+
+    <string name="common_generic_error_title">Alguma coisa deu errado</string>
+    <string name="common_generic_error_message">Tente novamente ou reporte um problema</string>
     <string name="common_ok">OK</string>
+    <string name="common_add_profile_photo">Adicionar foto de perfil</string>
+    <string name="common_take_photo">Tirar foto</string>
+    <string name="common_upload_photo">Galeria</string>
+
+    <string name="error_message_invalid_username_or_password">E-mail ou senha incorretos</string>
+    <string name="error_message_user_with_username_already_exists">Usuário com o e-mail fornecido já existe no sistema</string>
+    <string name="error_message_field_blank">%1s é obrigatório</string>
+    <string name="error_message_password_less_than_eight_chars">Senha deve conter no mínimo 8 caracteres</string>
+    <string name="error_message_password_invalid">Senha deve conter pelo menos uma letra e número</string>
+    <string name="error_message_password_confirmation_invalid">Confirmação de senha não corresponde</string>
+    <string name="error_message_email_invalid">E-mail inválido</string>
+
+    <string name="feature_login_email">E-mail</string>
+    <string name="feature_login_password">Senha</string>
+    <string name="feature_login_button">Entrar</string>
+    <string name="feature_login_no_account">Não possui uma conta?</string>
+    <string name="feature_login_register">Cadastre-se aqui</string>
+
+    <string name="feature_sign_up_change_profile_photo">Alterar foto de perfil</string>
+    <string name="feature_sign_up_first_name">Primeiro nome</string>
+    <string name="feature_sign_up_last_name">Último nome</string>
+    <string name="feature_sign_up_email">E-mail</string>
+    <string name="feature_sign_up_password">Senha</string>
+    <string name="feature_sign_up_password_confirmation">Confirmar senha</string>
+    <string name="feature_sign_up_button">Cadastrar</string>
+    <string name="feature_sign_up_passwords_match">as senhas são iguais</string>
+    <string name="feature_sign_up_has_account">Já possui uma conta?</string>
+    <string name="feature_sign_up_login_here">Fazer login</string>
+
+    <string name="splash_safety_info">Mensagens seguras, criptografadas e privadas</string>
+
 </resources>

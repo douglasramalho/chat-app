@@ -60,10 +60,12 @@ fun ChatNavigationBar(
                         onDestinationSelected(destination)
                     },
                     icon = {
-                        Icon(
-                            painter = painterResource(id = destination.icon),
-                            contentDescription = destination.title
-                        )
+                        destination.icon?.let {  icon ->
+                            Icon(
+                                painter = painterResource(id = icon),
+                                contentDescription = destination.title
+                            )
+                        }
                     },
                     label = {
                         Text(text = destination.title)
