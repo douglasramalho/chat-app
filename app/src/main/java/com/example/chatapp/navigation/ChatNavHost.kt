@@ -10,6 +10,10 @@ import com.example.chatapp.ui.feature.signup.SignUpRoute
 import com.example.chatapp.ui.feature.splash.SplashRoute
 import kotlinx.coroutines.delay
 
+const val SPLASH_ROUTE = "splash_route"
+const val SIGN_IN_ROUTE = "signIn"
+const val SIGN_UP_ROUTE = "signUp"
+
 @Composable
 fun ChatNavHost(
     appState: ChatAppState,
@@ -17,10 +21,10 @@ fun ChatNavHost(
 ) {
     val navController = appState.navController
 
-    NavHost(navController = appState.navController, startDestination = "splash") {
-        composable("splash") {
+    NavHost(navController = appState.navController, startDestination = SPLASH_ROUTE) {
+        composable(SPLASH_ROUTE) {
             val navOptions = navOptions {
-                popUpTo("splash") {
+                popUpTo(SPLASH_ROUTE) {
                     inclusive = true
                 }
             }
@@ -30,43 +34,43 @@ fun ChatNavHost(
                     navController.navigateToChats(navOptions)
                 },
                 navigateToSigIn = {
-                    navController.navigate("signIn", navOptions)
+                    navController.navigate(SIGN_IN_ROUTE, navOptions)
                 },
                 closeApp = closeApp
             )
         }
-        composable("signIn") {
+        composable(SIGN_IN_ROUTE) {
             SignInRoute(
                 navigateWhenAuthorized = {
                     val navOptions = navOptions {
-                        popUpTo("signIn") {
+                        popUpTo(SIGN_IN_ROUTE) {
                             inclusive = true
                         }
                     }
                     navController.navigateToChats(navOptions)
                 },
                 navigateWhenSignUpClicked = {
-                    navController.navigate("signUp") {
-                        popUpTo("signIn") {
+                    navController.navigate(SIGN_UP_ROUTE) {
+                        popUpTo(SIGN_UP_ROUTE) {
                             inclusive = true
                         }
                     }
                 }
             )
         }
-        composable("signUp") {
+        composable(SIGN_UP_ROUTE) {
             SignUpRoute(
                 navigateWhenAuthorized = {
                     val navOptions = navOptions {
-                        popUpTo("signUp") {
+                        popUpTo(SIGN_UP_ROUTE) {
                             inclusive = true
                         }
                     }
                     navController.navigateToChats(navOptions)
                 },
                 navigateWhenSigInClicked = {
-                    navController.navigate("signIn") {
-                        popUpTo("signUp") {
+                    navController.navigate(SIGN_IN_ROUTE) {
+                        popUpTo(SIGN_IN_ROUTE) {
                             inclusive = true
                         }
                     }

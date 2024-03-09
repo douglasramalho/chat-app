@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ChatApp</string>
+    <string name="app_name">Droid Chat</string>
 
     <string name="common_generic_error_title">Alguma coisa deu errado</string>
     <string name="common_generic_error_message">Tente novamente ou reporte um problema</string>

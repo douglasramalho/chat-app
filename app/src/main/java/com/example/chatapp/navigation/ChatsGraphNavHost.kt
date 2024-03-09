@@ -12,8 +12,12 @@ import androidx.navigation.navigation
 import com.example.chatapp.ui.feature.conversation.ConversationRoute
 import com.example.chatapp.ui.feature.conversationslist.ConversationsListRoute
 
-const val CHATS_ROUTE = "chatsGraph"
+const val CHATS_ROUTE = "chatsRoute"
 const val CHATS_DESTINATION = "chats"
+const val RECEIVER_ID = "receiverId"
+const val CONVERSATION_ROUTE = "conversation/{$RECEIVER_ID}"
+private const val DEEP_LINK_URI_PATTERN =
+    "https://chatapp.androidmoderno.com.br/conversation/{$RECEIVER_ID}"
 
 fun NavController.navigateToChats(navOptions: NavOptions? = null) {
     this.navigate(CHATS_ROUTE, navOptions)
@@ -36,10 +40,10 @@ fun NavGraphBuilder.chatsNavGraph(
             )
         }
         composable(
-            route = "conversation/{receiverId}",
+            route = CONVERSATION_ROUTE,
             deepLinks = listOf(
                 navDeepLink {
-                    uriPattern = "https://chatapp.androidmoderno.com.br/conversation/{receiverId}"
+                    uriPattern = DEEP_LINK_URI_PATTERN
                 }
             ),
             enterTransition = {
@@ -68,7 +72,7 @@ fun NavGraphBuilder.chatsNavGraph(
             }
         ) {
             ConversationRoute(
-                receiverId = it.arguments?.getString("receiverId")
+                receiverId = it.arguments?.getString(RECEIVER_ID)
             ) {
                 navController.popBackStack()
             }

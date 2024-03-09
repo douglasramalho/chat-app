@@ -27,7 +27,7 @@ fun NavGraphBuilder.profileNavGraph(
         composable(PROFILE_DESTINATION) {
             ProfileRoute(
                 navigateWhenLogout = {
-                    navController.navigate("signIn") {
+                    navController.navigate(SIGN_IN_ROUTE) {
                         popUpTo(CHATS_DESTINATION) {
                             inclusive = true
                         }
