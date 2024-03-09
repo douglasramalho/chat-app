@@ -143,14 +143,4 @@ class SignUpViewModel @Inject constructor(
             )
         }
     }
-
-    sealed interface SignUpResultUiState {
-        data object Loading : SignUpResultUiState
-        sealed interface Error : SignUpResultUiState {
-            data object UserWithUsernameAlreadyExists : Error
-            data object Generic : Error
-        }
-
-        data object Success : SignUpResultUiState
-    }
 }

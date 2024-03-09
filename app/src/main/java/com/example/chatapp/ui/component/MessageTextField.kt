@@ -96,7 +96,9 @@ fun MessageTextField(
                             singleLine = false,
                             placeholder = { Text(text = placeholder) },
                             visualTransformation = VisualTransformation.None,
-                            interactionSource = MutableInteractionSource()
+                            interactionSource = remember {
+                                MutableInteractionSource()
+                            }
                         ) {
 
                         }

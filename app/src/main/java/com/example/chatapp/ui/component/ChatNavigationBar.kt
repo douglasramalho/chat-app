@@ -19,7 +19,6 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavDestination
 import com.example.chatapp.navigation.TopLevelDestination
 import com.example.chatapp.ui.isTopLevelInHierarchy
-import com.example.chatapp.ui.theme.Neutral60
 
 @Composable
 fun ChatNavigationBar(

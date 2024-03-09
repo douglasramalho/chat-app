@@ -6,7 +6,6 @@ import com.example.chatapp.data.network.response.ActiveStatusResponse
 import com.example.chatapp.data.network.response.MessageResponse
 import com.example.chatapp.data.network.response.UnreadStatusResponse
 import io.ktor.client.HttpClient
-import io.ktor.client.plugins.websocket.webSocket
 import io.ktor.client.plugins.websocket.webSocketSession
 import io.ktor.websocket.Frame
 import io.ktor.websocket.WebSocketSession
@@ -15,7 +14,6 @@ import io.ktor.websocket.readText
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.filter
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.serialization.encodeToString
