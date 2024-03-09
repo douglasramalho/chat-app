@@ -8,7 +8,6 @@ import com.example.chatapp.ui.ChatAppState
 import com.example.chatapp.ui.feature.signin.SignInRoute
 import com.example.chatapp.ui.feature.signup.SignUpRoute
 import com.example.chatapp.ui.feature.splash.SplashRoute
-import kotlinx.coroutines.delay
 
 const val SPLASH_ROUTE = "splash_route"
 const val SIGN_IN_ROUTE = "signIn"
