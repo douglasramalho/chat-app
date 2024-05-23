@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network.response
+package com.example.chatapp.data.remote.response
 
 import kotlinx.serialization.Serializable
 

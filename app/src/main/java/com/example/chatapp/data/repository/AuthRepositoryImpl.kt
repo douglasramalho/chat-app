@@ -2,12 +2,11 @@ package com.example.chatapp.data.repository
 
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
-import com.example.chatapp.data.network.NetworkDataSource
-import com.example.chatapp.data.network.NetworkError
-import com.example.chatapp.data.network.request.AuthRequest
-import com.example.chatapp.data.network.request.CreateAccountRequest
-import com.example.chatapp.data.network.response.toModel
-import com.example.chatapp.model.AppError
+import com.example.chatapp.data.remote.NetworkDataSource
+import com.example.chatapp.data.remote.NetworkError
+import com.example.chatapp.data.remote.request.AuthRequest
+import com.example.chatapp.data.remote.request.CreateAccountRequest
+import com.example.chatapp.data.remote.response.toModel
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 

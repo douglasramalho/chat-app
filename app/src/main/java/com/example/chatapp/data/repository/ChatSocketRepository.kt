@@ -8,17 +8,16 @@ interface ChatSocketRepository {
 
     val messagesFlow: MutableStateFlow<Message?>
 
-    suspend fun openSession()
+    suspend fun openSession(): Result<Unit>
 
     suspend fun observeSocketResult(): Flow<SocketResult>
 
     suspend fun closeSession()
 
-    suspend fun getOnlineStatus()
-
     suspend fun sendMessage(
         receiverId: String,
-        message: String
+        text: String,
+        timestamp: Long,
     )
 
     suspend fun sendReadMessage(messageId: Int)

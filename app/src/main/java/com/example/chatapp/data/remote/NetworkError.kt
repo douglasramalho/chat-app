@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network
+package com.example.chatapp.data.remote
 
 sealed class NetworkError : Exception() {
     data object Unauthorized : NetworkError()

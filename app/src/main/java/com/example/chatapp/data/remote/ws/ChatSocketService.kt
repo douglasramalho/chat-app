@@ -1,23 +1,22 @@
-package com.example.chatapp.data.ws
+package com.example.chatapp.data.remote.ws
 
 import kotlinx.coroutines.flow.Flow
 
 interface ChatSocketService {
 
-    suspend fun openSession(userId: String)
+    val isConnected: Boolean
+
+    suspend fun connect(userId: String): Result<Unit>
 
     fun observeSocketResultFlow(): Flow<SocketSessionResult>
 
     suspend fun sendGetConversationsList(userId: String)
 
-    suspend fun sendGetActiveStatus()
-
-    suspend fun sendMessage(
-        receiverId: String,
-        message: String
+    suspend fun sendJsonStringData(
+        dataJsonString: String
     )
 
     suspend fun sendReadMessage(messageId: Int)
 
-    suspend fun closeSession()
+    suspend fun disconnect()
 }

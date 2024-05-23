@@ -1,9 +1,9 @@
 package com.example.chatapp.data.di
 
-import com.example.chatapp.data.ws.ChatSocketService
-import com.example.chatapp.data.ws.ChatSocketServiceImpl
-import com.example.chatapp.data.network.NetworkDataSource
-import com.example.chatapp.data.network.NetworkDataSourceImpl
+import com.example.chatapp.data.remote.ws.ChatSocketService
+import com.example.chatapp.data.remote.ws.ChatSocketServiceImpl
+import com.example.chatapp.data.remote.NetworkDataSource
+import com.example.chatapp.data.remote.NetworkDataSourceImpl
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

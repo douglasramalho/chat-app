@@ -1,8 +1,8 @@
 package com.example.chatapp.data.repository
 
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
-import com.example.chatapp.data.network.NetworkDataSource
-import com.example.chatapp.data.network.response.toModel
+import com.example.chatapp.data.remote.NetworkDataSource
+import com.example.chatapp.data.remote.response.toModel
 import com.example.chatapp.model.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow

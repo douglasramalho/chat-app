@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network.resource
+package com.example.chatapp.data.remote.resource
 
 import io.ktor.resources.Resource
 

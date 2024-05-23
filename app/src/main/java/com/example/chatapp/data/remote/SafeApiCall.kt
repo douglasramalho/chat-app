@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network
+package com.example.chatapp.data.remote
 
 import io.ktor.client.call.body
 import io.ktor.client.statement.HttpResponse

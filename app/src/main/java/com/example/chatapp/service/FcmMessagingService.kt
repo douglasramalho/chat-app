@@ -99,18 +99,9 @@ class FcmMessagingService @Inject constructor() : FirebaseMessagingService() {
         val notificationManager = NotificationManagerCompat.from(this)
         val channelId = ChatApplication.CHANNEL_ID
 
-        val loader = ImageLoader(this@FcmMessagingService)
-        val request = ImageRequest.Builder(this@FcmMessagingService)
-            .data(messageNotificationPayload.profilePictureUrl)
-            .build()
-
-        val result = (loader.execute(request) as SuccessResult).drawable
-        val bitmap = (result as BitmapDrawable).bitmap
-
         val notificationBuilder = NotificationCompat.Builder(this@FcmMessagingService, channelId)
             .setContentTitle(messageNotificationPayload.userName)
             .setContentText(messageNotificationPayload.message)
-            .setLargeIcon(bitmap)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)

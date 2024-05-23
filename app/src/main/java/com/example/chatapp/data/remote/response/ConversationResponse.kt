@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network.response
+package com.example.chatapp.data.remote.response
 
 import com.example.chatapp.model.Conversation
 import com.example.chatapp.model.ConversationMember

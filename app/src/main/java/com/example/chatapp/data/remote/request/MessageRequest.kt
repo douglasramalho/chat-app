@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network.request
+package com.example.chatapp.data.remote.request
 
 import kotlinx.serialization.Serializable
 
@@ -6,4 +6,5 @@ import kotlinx.serialization.Serializable
 data class MessageRequest(
     val receiverId: String,
     val text: String,
+    val timestamp: Long,
 )

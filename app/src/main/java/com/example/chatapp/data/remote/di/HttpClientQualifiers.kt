@@ -1,4 +1,4 @@
-package com.example.chatapp.data.network.di
+package com.example.chatapp.data.remote.di
 
 import javax.inject.Qualifier
 

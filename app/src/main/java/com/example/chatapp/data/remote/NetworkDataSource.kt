@@ -1,13 +1,13 @@
-package com.example.chatapp.data.network
+package com.example.chatapp.data.remote
 
-import com.example.chatapp.data.network.request.AuthRequest
-import com.example.chatapp.data.network.request.CreateAccountRequest
-import com.example.chatapp.data.network.request.RegisterPushRequest
-import com.example.chatapp.data.network.response.ImageResponse
-import com.example.chatapp.data.network.response.PaginatedConversationResponse
-import com.example.chatapp.data.network.response.PaginatedMessageResponse
-import com.example.chatapp.data.network.response.TokenResponse
-import com.example.chatapp.data.network.response.UserResponse
+import com.example.chatapp.data.remote.request.AuthRequest
+import com.example.chatapp.data.remote.request.CreateAccountRequest
+import com.example.chatapp.data.remote.request.RegisterPushRequest
+import com.example.chatapp.data.remote.response.ImageResponse
+import com.example.chatapp.data.remote.response.PaginatedConversationResponse
+import com.example.chatapp.data.remote.response.PaginatedMessageResponse
+import com.example.chatapp.data.remote.response.TokenResponse
+import com.example.chatapp.data.remote.response.UserResponse
 
 interface NetworkDataSource {
 

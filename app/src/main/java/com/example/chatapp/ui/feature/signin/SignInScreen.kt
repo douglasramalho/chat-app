@@ -54,6 +54,7 @@ fun SignInRoute(
     val currentNavigateWhenAuthorized by rememberUpdatedState(navigateWhenAuthorized)
     LaunchedEffect(uiState) {
         if (uiState.isLoggedIn) {
+            // viewModel.startWorkManager()
             currentNavigateWhenAuthorized()
         }
     }

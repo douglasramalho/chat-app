@@ -1,23 +1,24 @@
 package com.example.chatapp.data.repository
 
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
-import com.example.chatapp.data.network.response.toModel
-import com.example.chatapp.data.ws.ChatSocketService
-import com.example.chatapp.data.ws.SocketSessionResult
+import com.example.chatapp.data.remote.request.MessageRequest
+import com.example.chatapp.data.remote.request.MarkMessageAsReadRequest
+import com.example.chatapp.data.remote.response.toModel
+import com.example.chatapp.data.remote.ws.ChatSocketService
+import com.example.chatapp.data.remote.ws.SocketSessionResult
+import com.example.chatapp.data.remote.ws.WebSocketData
+import com.example.chatapp.data.remote.ws.WebSocketDataType
 import com.example.chatapp.model.Message
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 sealed interface SocketResult {
     data class NewMessage(val message: Message) : SocketResult
-    data class UnreadStatus(
-        val hasConversationsUnread: Boolean,
-        val unreadMessagesCount: Int
-    ) : SocketResult
-
     data class ActiveStatus(val activeUserIds: List<Int>) : SocketResult
     data object Empty : SocketResult
     data object Error : SocketResult
@@ -31,9 +32,9 @@ class ChatSocketRepositoryImpl @Inject constructor(
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
-    override suspend fun openSession() {
+    override suspend fun openSession(): Result<Unit> {
         val currentUser = appPreferencesDataSource.currentUser.first()
-        chatSocketService.openSession(currentUser.id)
+        return chatSocketService.connect(currentUser.id)
     }
 
     override suspend fun observeSocketResult(): Flow<SocketResult> {
@@ -45,14 +46,8 @@ class ChatSocketRepositoryImpl @Inject constructor(
                     is SocketSessionResult.MessageReceived ->
                         SocketResult.NewMessage(it.message.toModel(currentUser.id))
 
-                    is SocketSessionResult.UnreadStatus -> {
-                        SocketResult.UnreadStatus(
-                            hasConversationsUnread = it.unreadStatusResponse.hasConversationsUnread,
-                            unreadMessagesCount = it.unreadStatusResponse.unreadMessagesCount,
-                        )
-                    }
-
-                    is SocketSessionResult.ActiveStatus -> SocketResult.ActiveStatus(it.activeStatusResponse.activeUserIds)
+                    is SocketSessionResult.ActiveStatus ->
+                        SocketResult.ActiveStatus(it.activeUserIdsResponse.activeUserIds)
 
                     SocketSessionResult.EmptyResult -> SocketResult.Empty
                 }
@@ -60,21 +55,38 @@ class ChatSocketRepositoryImpl @Inject constructor(
     }
 
     override suspend fun closeSession() {
-        chatSocketService.closeSession()
-    }
-
-    override suspend fun getOnlineStatus() {
-        chatSocketService.sendGetActiveStatus()
+        chatSocketService.disconnect()
     }
 
     override suspend fun sendMessage(
         receiverId: String,
-        message: String
+        text: String,
+        timestamp: Long,
     ) {
-        chatSocketService.sendMessage(receiverId, message)
+        val messageRequest = MessageRequest(
+            receiverId = receiverId,
+            text = text,
+            timestamp = timestamp,
+        )
+
+        val webSocketData = WebSocketData(
+            type = WebSocketDataType.MESSAGE_REQUEST.value,
+            data = messageRequest
+        )
+
+        chatSocketService.sendJsonStringData(Json.encodeToString(webSocketData))
     }
 
     override suspend fun sendReadMessage(messageId: Int) {
-        chatSocketService.sendReadMessage(messageId)
+        val markMessageAsRead = MarkMessageAsReadRequest(
+            messageId = messageId,
+        )
+
+        val webSocketData = WebSocketData(
+            type = WebSocketDataType.MARK_MESSAGE_AS_READ_REQUEST.value,
+            data = markMessageAsRead
+        )
+
+        chatSocketService.sendJsonStringData(Json.encodeToString(webSocketData))
     }
 }

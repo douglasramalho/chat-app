@@ -1,12 +1,12 @@
-package com.example.chatapp.data.network.di
+package com.example.chatapp.data.remote.di
 
 import android.content.Context
 import android.content.Intent
 import com.example.chatapp.MainActivity
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
-import com.example.chatapp.data.network.NetworkError
-import com.example.chatapp.data.ws.ChatSocketService
+import com.example.chatapp.data.remote.NetworkError
+import com.example.chatapp.data.remote.ws.ChatSocketService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -81,7 +81,7 @@ object ApiModule {
                         HttpStatusCode.NotFound -> NetworkError.NotFound
                         HttpStatusCode.Conflict -> NetworkError.Conflict
                         HttpStatusCode.Unauthorized -> {
-                            chatSocketService.closeSession()
+                            chatSocketService.disconnect()
                             appPreferencesDataSource.clear()
                             dataStorePreferencesDataSource.clear()
 
