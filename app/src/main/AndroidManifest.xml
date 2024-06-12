@@ -41,8 +41,8 @@
         </service>
 
         <provider
-            android:authorities="com.example.chatapp.fileprovider"
             android:name=".ChatAppFileProvider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
 

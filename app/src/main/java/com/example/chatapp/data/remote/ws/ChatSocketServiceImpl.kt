@@ -1,5 +1,6 @@
 package com.example.chatapp.data.remote.ws
 
+import com.example.chatapp.BuildConfig
 import com.example.chatapp.data.remote.di.SocketHttpClient
 import com.example.chatapp.data.remote.response.ActiveUserIdsResponse
 import com.example.chatapp.data.remote.response.MessageResponse
@@ -34,20 +35,13 @@ class ChatSocketServiceImpl @Inject constructor(
     override val isConnected: Boolean
         get() = webSocketSession?.isActive == true
 
-    override suspend fun connect(userId: String): Result<Unit> {
-        return try {
+    override suspend fun openSession(userId: String) {
+        try {
             // "ws://chat-api.androidmoderno.com.br:8080/chat/$userId"
             // "ws://192.168.1.68:8080/chat/$userId"
-            client.webSocketSession("wss://chat-api.androidmoderno.com.br/chat/$userId").run {
-                webSocketSession = this
-                if (this.isActive) {
-                    Result.success(Unit)
-                } else Result.failure(Exception("Couldn't establish connection"))
-            }
-
+            webSocketSession = client.webSocketSession("${BuildConfig.WS_URL}/chat/$userId")
         } catch (e: Exception) {
             e.printStackTrace()
-            Result.failure(e)
         }
     }
 
@@ -78,18 +72,8 @@ class ChatSocketServiceImpl @Inject constructor(
         }
     }
 
-    override suspend fun sendGetConversationsList(userId: String) {
-        webSocketSession?.send(Frame.Text("getConversations#$userId"))
-    }
-
-    override suspend fun sendJsonStringData(
-        dataJsonString: String
-    ) {
+    override suspend fun sendJsonStringData(dataJsonString: String) {
         webSocketSession?.send(Frame.Text(dataJsonString))
-    }
-
-    override suspend fun sendReadMessage(messageId: Int) {
-        webSocketSession?.send(Frame.Text("markMessageAsRead#$messageId"))
     }
 
     override suspend fun disconnect() {

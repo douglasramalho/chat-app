@@ -32,9 +32,9 @@ class ChatSocketRepositoryImpl @Inject constructor(
     override val messagesFlow: MutableStateFlow<Message?>
         get() = MutableStateFlow(null)
 
-    override suspend fun openSession(): Result<Unit> {
+    override suspend fun openSession() {
         val currentUser = appPreferencesDataSource.currentUser.first()
-        return chatSocketService.connect(currentUser.id)
+        chatSocketService.openSession(currentUser.id)
     }
 
     override suspend fun observeSocketResult(): Flow<SocketResult> {

@@ -44,7 +44,7 @@ fun ConversationRoute(
     onNavigationClick: () -> Unit,
 ) {
     val lifecycleOwner = LocalLifecycleOwner.current
-    DisposableEffect(key1 = lifecycleOwner) {
+    DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_START) {
                 receiverId?.let {

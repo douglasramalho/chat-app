@@ -43,42 +43,40 @@ class ConversationViewModel @Inject constructor(
 
     fun connectToSocket() {
         viewModelScope.launch {
-            val connectionResult = chatSocketRepository.openSession()
-            if (connectionResult.isSuccess) {
-                chatSocketRepository.observeSocketResult()
-                    .collect { socketResult ->
-                        when (socketResult) {
-                            is SocketResult.NewMessage -> {
-                                val message = socketResult.message
-                                messageRepository.saveNewMessage(message)
-                                val newList = conversationState.value.messages.toMutableList().apply {
-                                    add(0, message)
-                                }
-
-                                _conversationState.update {
-                                    it.copy(messages = newList)
-                                }
+            chatSocketRepository.openSession()
+            chatSocketRepository.observeSocketResult()
+                .collect { socketResult ->
+                    when (socketResult) {
+                        is SocketResult.NewMessage -> {
+                            val message = socketResult.message
+                            messageRepository.saveNewMessage(message)
+                            val newList = conversationState.value.messages.toMutableList().apply {
+                                add(0, message)
                             }
 
-                            is SocketResult.ActiveStatus -> {
-                                _conversationState.value.receiver?.let { receiver ->
-                                    _conversationState.value = _conversationState.value.copy(
-                                        isOnline = socketResult.activeUserIds.contains(
-                                            receiver.id.toInt()
-                                        )
-                                    )
-                                }
-                            }
-
-                            SocketResult.Empty -> {
-                            }
-
-                            SocketResult.Error -> {
-
+                            _conversationState.update {
+                                it.copy(messages = newList)
                             }
                         }
+
+                        is SocketResult.ActiveStatus -> {
+                            _conversationState.value.receiver?.let { receiver ->
+                                _conversationState.value = _conversationState.value.copy(
+                                    isOnline = socketResult.activeUserIds.contains(
+                                        receiver.id.toInt()
+                                    )
+                                )
+                            }
+                        }
+
+                        SocketResult.Empty -> {
+                        }
+
+                        SocketResult.Error -> {
+
+                        }
                     }
-            }
+                }
         }
     }
 

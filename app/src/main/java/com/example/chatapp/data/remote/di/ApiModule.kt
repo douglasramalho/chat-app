@@ -2,6 +2,7 @@ package com.example.chatapp.data.remote.di
 
 import android.content.Context
 import android.content.Intent
+import com.example.chatapp.BuildConfig
 import com.example.chatapp.MainActivity
 import com.example.chatapp.data.datastore.AppPreferencesDataSource
 import com.example.chatapp.data.datastore.DataStorePreferencesDataSource
@@ -132,8 +133,7 @@ object ApiModule {
             }*/
 
             defaultRequest {
-                url("https://chat-api.androidmoderno.com.br/")
-                // url("http://192.168.1.68:8080/")
+                url(BuildConfig.API_URL)
                 contentType(ContentType.Application.Json)
             }
 

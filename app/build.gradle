@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'com.google.dagger.hilt.android'
     id "kotlin-kapt"
-    id 'com.google.gms.google-services'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id "com.google.protobuf" version "0.9.4"
 }
@@ -25,10 +24,30 @@ android {
         }
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     buildTypes {
         release {
             minifyEnabled true
+            shrinkResources = true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    flavorDimensions += "env"
+    productFlavors {
+        create("development") {
+            dimension = "env"
+            applicationIdSuffix = ".developing"
+            versionNameSuffix = " (developing)"
+            buildConfigField("String", "API_URL", "\"http://192.168.1.68:8080/\"")
+            buildConfigField("String", "WS_URL", "\"ws://192.168.1.68:8080/\"")
+        }
+        create("production") {
+            dimension = "env"
+            buildConfigField("String", "API_URL", "\"https://chat-api.androidmoderno.com.br/\"")
+            buildConfigField("String", "WS_URL", "\"wss://chat-api.androidmoderno.com.br/\"")
         }
     }
     compileOptions {
